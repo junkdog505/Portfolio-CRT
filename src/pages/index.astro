@@ -1,17 +1,398 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import CRTWarp from '../components/CRTWarp.astro';
 
+const techStack = [
+  { name: 'Three.js / WebGL', type: '3D Real-time', color: 'text-amber-500 border-amber-600/40' },
+  { name: 'Astro Framework', type: 'Zero JS by default', color: 'text-orange-500 border-orange-600/40' },
+  { name: 'TypeScript', type: 'Strict Typing', color: 'text-blue-500 border-blue-600/40' },
+  { name: 'GLSL Shaders', type: 'GPU Compute', color: 'text-emerald-500 border-emerald-600/40' },
+  { name: 'Node.js & APIs', type: 'High Concurrency', color: 'text-green-500 border-green-600/40' },
+  { name: 'Tailwind CSS v4', type: 'Modern Styling', color: 'text-cyan-500 border-cyan-600/40' },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout isHome={true} title="Inicio | Ingeniero Full-Stack & Creative 3D Developer" description="Portafolio profesional de ingeniería de software, arquitectura web escalable y experiencias interactivas en 3D en tiempo real.">
+  <div class="relative z-10 h-full w-full flex flex-col justify-between select-none px-4 sm:px-6 max-w-7xl mx-auto">
+
+    <!-- Top Telemetry Banner -->
+    <div class="relative z-10 border border-amber-900/60 bg-[#0c0c10]/85 backdrop-blur-md px-3 py-1.5 flex flex-wrap items-center justify-between text-[11px] font-mono text-zinc-400 shadow-md">
+      <div class="flex items-center gap-2.5">
+        <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+        <span class="text-amber-500 font-bold crt-text-amber tracking-wider">&gt;_ SHELL: ONLINE // ROOT</span>
+        <span class="text-zinc-500 hidden sm:inline">[PORTFOLIO // KERNEL 6.8]</span>
+      </div>
+      <div class="flex items-center gap-3 text-[10px] text-zinc-400">
+        <span class="text-emerald-400 crt-text-green font-bold">● 60 FPS STABLE</span>
+        <span>•</span>
+        <span class="text-amber-500 crt-text-amber">CORE WEB VITALS 99+</span>
+        <span class="hidden md:inline">•</span>
+        <span class="text-zinc-500 hidden md:inline">WCAG AA CERTIFIED</span>
+      </div>
+    </div>
+
+    <!-- Main Hero Body (Center Grid: Copy Left / 3D Laptop Right) -->
+    <div class="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto py-2">
+      
+      <!-- Left Column: Copy, Tech Badges & CRT Action Buttons -->
+      <div class="lg:col-span-7 flex flex-col justify-center space-y-3 sm:space-y-4">
+        
+        <!-- Engineering Badge with Reticle SVG -->
+        <div class="inline-flex items-center gap-2 border border-amber-800/80 bg-amber-950/30 px-2.5 py-1 text-[11px] text-amber-400 font-bold crt-text-amber w-fit">
+          <svg class="w-3.5 h-3.5 text-amber-400 animate-spin" style="animation-duration: 12s;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="2" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+          </svg>
+          <span>// INGENIERO FULL-STACK & CREATIVE DEVELOPER</span>
+        </div>
+
+        <!-- Punchy Hero Heading -->
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-zinc-100 leading-none">
+          ARQUITECTURA WEB <br />
+          <span class="text-amber-500 crt-text-amber">& GRÁFICOS 3D</span>
+        </h1>
+
+        <!-- High-impact Summary -->
+        <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed border-l-2 border-amber-700/80 pl-3.5 py-1 bg-[#100f14]/50 max-w-2xl">
+          Construyo plataformas web de alto rendimiento y experiencias interactivas en tiempo real. Fusiono ingeniería de software escalable (<strong class="text-zinc-100 font-semibold">Astro, TypeScript, React, Node.js</strong>) con computación gráfica (<strong class="text-amber-400 font-semibold crt-text-amber">Three.js, WebGL y Shaders GLSL</strong>) a 60 FPS estables.
+        </p>
+
+        <!-- CRT Action Buttons -->
+        <div class="flex flex-wrap gap-2.5 pt-1">
+          <a href="/proyectos" class="crt-btn text-xs py-2 px-5">
+            <span>[ &gt; VER PROYECTOS &lt; ]</span>
+          </a>
+          <a href="/contacto" class="crt-btn crt-btn-secondary text-xs py-2 px-5">
+            <span>[ INICIAR CONTACTO ]</span>
+          </a>
+          <a href="/sobre-mi" class="crt-btn crt-btn-green text-xs py-2 px-5">
+            <span>[ CONOCE MI PERFIL ]</span>
+          </a>
+        </div>
+
+        <!-- Real Tech Stack Badges -->
+        <div class="pt-1">
+          <div class="text-[10px] text-zinc-500 font-mono uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <span>[ STACK PRINCIPAL ]</span>
+            <div class="h-px flex-1 bg-amber-900/30"></div>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            {techStack.map((tech) => (
+              <span class={`border ${tech.color} bg-[#0c0c10]/90 px-2 py-0.5 text-[10px] font-mono flex items-center gap-1 shadow-sm`}>
+                <span class="text-amber-500 font-bold">&bull;</span>
+                <span class="text-zinc-200 font-semibold">{tech.name}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: 3D Slot for Retro Laptop with Linux Terminal Frame -->
+      <div class="lg:col-span-5 flex flex-col items-center justify-center">
+        <div class="w-full max-w-[400px] h-[320px] sm:h-[350px] relative border border-[#451a03] bg-[#0c0c10]/85 p-3 shadow-2xl flex flex-col backdrop-blur-sm tech-card">
+          <!-- Corner reticle crosshairs -->
+          <div class="tech-corner-tl"></div>
+          <div class="tech-corner-tr"></div>
+          <div class="tech-corner-bl"></div>
+          <div class="tech-corner-br"></div>
+
+          <!-- Technical Card Header -->
+          <div class="flex items-center justify-between text-[10px] text-amber-500 font-mono mb-1.5 border-b border-amber-900/40 pb-1">
+            <div class="flex items-center gap-1.5">
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              <span class="crt-text-amber font-bold">TERMINAL 3D // LINUX ARCH</span>
+            </div>
+            <span class="text-emerald-400 font-mono text-[9px] crt-text-green font-bold">● CLIC: SONIDO TECLADO</span>
+          </div>
+
+          <!-- 3D ANCHOR: Laptop with Linux terminal (Centrally positioned) -->
+          <div
+            id="scene-anchor"
+            data-rust-slot="laptop"
+            class="w-full flex-1 flex items-center justify-center cursor-grab select-none relative"
+            title="Haz clic o arrastra para rotar la laptop 3D (emite sonido mecánico de teclado)"
+          >
+            <!-- Persistent Three.js canvas auto-aligns right here -->
+          </div>
+
+          <!-- Technical Card Footer Telemetry -->
+          <div class="flex items-center justify-between text-[9px] text-zinc-500 font-mono border-t border-amber-900/30 pt-1 mt-1">
+            <span>BUFFER: 1024KB // LATENCIA: &lt;1ms</span>
+            <span class="text-amber-500 crt-text-amber">[THREE.JS PBR]</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Docked Navigation & System Telemetry Bar (Zero Scroll / Strict 100vh) -->
+    <div class="relative z-10 border-t border-amber-900/60 bg-[#0c0c10]/90 backdrop-blur-md px-3 py-2 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] font-mono text-zinc-400">
+      
+      <!-- Quick Route Jump Ticker -->
+      <div class="flex items-center gap-3 overflow-x-auto no-scrollbar">
+        <span class="text-amber-500 font-bold crt-text-amber hidden sm:inline">&gt; ACCESO RÁPIDO:</span>
+        <a href="/sobre-mi" class="hover:text-amber-400 hover:underline transition-colors">[ 01 SOBRE MÍ ]</a>
+        <a href="/experiencia" class="hover:text-amber-400 hover:underline transition-colors">[ 02 EXPERIENCIA ]</a>
+        <a href="/formacion" class="hover:text-amber-400 hover:underline transition-colors">[ 03 FORMACIÓN ]</a>
+        <a href="/proyectos" class="hover:text-amber-400 hover:underline transition-colors">[ 04 PROYECTOS ]</a>
+        <a href="/contacto" class="hover:text-amber-400 hover:underline transition-colors">[ 05 CONTACTO ]</a>
+      </div>
+
+      <!-- Social & Telemetry Badges -->
+      <div class="flex items-center gap-3 text-zinc-500">
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 transition-colors text-amber-500 font-bold crt-text-amber">[GITHUB]</a>
+        <span>//</span>
+        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 transition-colors text-amber-500 font-bold crt-text-amber">[LINKEDIN]</a>
+        <span>//</span>
+        <span class="text-zinc-400 font-mono">&copy; 2026 INGENIERÍA 3D</span>
+      </div>
+
+    </div>
+
+    <!-- Easter Egg Modal (Revealed when clicking the 3D Laptop) -->
+    <div
+      id="easter-egg-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 select-none"
+      aria-hidden="true"
+      role="dialog"
+      aria-label="Easter Egg: Identidad del Creador"
+    >
+      <div
+        id="easter-egg-card"
+        class="relative w-full max-w-sm sm:max-w-md bg-[#0c0c10] border-2 border-amber-500 shadow-[0_0_50px_rgba(245,158,11,0.4)] p-4 sm:p-5 transform scale-95 transition-all duration-300 tech-card overflow-hidden"
+      >
+        <!-- Technical Corner Brackets -->
+        <div class="tech-corner-tl"></div>
+        <div class="tech-corner-tr"></div>
+        <div class="tech-corner-bl"></div>
+        <div class="tech-corner-br"></div>
+
+        <!-- Card Header -->
+        <div class="flex items-center justify-between border-b border-amber-900/60 pb-2 mb-3 text-xs font-mono">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span class="text-amber-400 font-bold crt-text-amber tracking-wider">[SYS_BIOMETRIC // MATCH]</span>
+          </div>
+          <button
+            type="button"
+            id="easter-egg-close"
+            class="text-zinc-400 hover:text-amber-300 font-mono text-[11px] px-2 py-0.5 border border-zinc-700 hover:border-amber-500 bg-zinc-900/80 transition-colors cursor-pointer"
+            title="Cerrar (Esc)"
+          >
+            [✕ CERRAR]
+          </button>
+        </div>
+
+        <!-- Photo Display with CRT Overlay -->
+        <div class="relative w-full rounded border border-amber-900/80 overflow-hidden bg-black shadow-inner">
+          <img
+            src="/creator.jpg"
+            alt="Foto del creador con su gato"
+            class="w-full h-auto object-cover max-h-[46vh] sm:max-h-[50vh] mx-auto filter contrast-105"
+            loading="eager"
+          />
+          <!-- CRT scanline overlay -->
+          <div class="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-amber-500/5 to-transparent bg-[length:100%_4px] opacity-40"></div>
+          
+          <!-- Live Camera Badge -->
+          <div class="absolute top-2 left-2 bg-black/85 border border-emerald-500/60 px-2 py-0.5 text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1.5 shadow">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>REC ● CAM_FEED_01</span>
+          </div>
+
+          <div class="absolute bottom-2 right-2 bg-black/85 border border-amber-500/60 px-2 py-0.5 text-[9px] font-mono text-amber-400 font-bold">
+            <span>FPS: 60 // PBR 1080P</span>
+          </div>
+        </div>
+
+        <!-- Delayed Tooltip / Identity Badge -->
+        <div
+          id="easter-egg-tooltip"
+          class="mt-3.5 border-l-2 border-amber-500 bg-amber-950/40 border border-amber-900/40 p-3 text-xs font-mono text-zinc-200 transition-all duration-500 opacity-0 translate-y-3"
+        >
+          <div class="flex items-center justify-between text-amber-400 font-bold crt-text-amber text-[11px] mb-1">
+            <span class="flex items-center gap-1.5">
+              <span class="text-emerald-400">&gt;&gt;</span>
+              <span>IDENTIDAD CONFIRMADA:</span>
+            </span>
+            <span class="text-emerald-400 crt-text-green font-bold">100% HUMANO</span>
+          </div>
+          <p class="leading-relaxed text-[12px] sm:text-[13px] text-zinc-100 font-sans">
+            ¡Sí, este soy yo! 👋🐱 <br />
+            <span class="text-zinc-300 font-mono text-[11px] block mt-0.5">
+              Junto a mi copiloto felino y Lead Code Reviewer. ¡Gracias por explorar mi portafolio e interactuar con la laptop 3D!
+            </span>
+          </p>
+        </div>
+
+        <!-- Telemetry Bar & Dismissal Prompt -->
+        <div class="mt-3 flex items-center justify-between text-[10px] font-mono text-zinc-400 border-t border-amber-900/40 pt-2">
+          <span id="easter-egg-timer-text" class="text-emerald-400 crt-text-green">AUTO-CIERRE EN 6s...</span>
+          <span class="text-amber-500 font-bold crt-text-amber">[ESC / CLIC PARA CERRAR]</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let cleanupEasterEgg: (() => void) | null = null;
+
+    function playEasterEggChime() {
+      try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContextClass) return;
+        const ctx = new AudioContextClass();
+        const now = ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const t = now + idx * 0.08;
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.12, t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.26);
+        });
+      } catch (_) {}
+    }
+
+    function initEasterEgg() {
+      if (cleanupEasterEgg) cleanupEasterEgg();
+
+      const modal = document.getElementById('easter-egg-modal');
+      const card = document.getElementById('easter-egg-card');
+      const tooltip = document.getElementById('easter-egg-tooltip');
+      const closeBtn = document.getElementById('easter-egg-close');
+      const timerText = document.getElementById('easter-egg-timer-text');
+      const laptopSlot = document.querySelector('[data-rust-slot="laptop"]');
+
+      if (!modal || !card) return;
+
+      let isOpen = false;
+      let tooltipTimeout: number | null = null;
+      let dismissTimeout: number | null = null;
+      let countdownInterval: number | null = null;
+
+      function closeEasterEgg() {
+        if (!isOpen) return;
+        isOpen = false;
+
+        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+        if (dismissTimeout) clearTimeout(dismissTimeout);
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modal.classList.remove('opacity-100', 'pointer-events-auto');
+        card.classList.add('scale-95');
+        card.classList.remove('scale-100');
+
+        if (tooltip) {
+          tooltip.classList.add('opacity-0', 'translate-y-3');
+          tooltip.classList.remove('opacity-100', 'translate-y-0');
+        }
+      }
+
+      function openEasterEgg() {
+        if (isOpen) return;
+        isOpen = true;
+
+        playEasterEggChime();
+
+        // 1. Show modal and photo immediately
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        modal.classList.add('opacity-100', 'pointer-events-auto');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+
+        // Reset tooltip initial state
+        if (tooltip) {
+          tooltip.classList.add('opacity-0', 'translate-y-3');
+          tooltip.classList.remove('opacity-100', 'translate-y-0');
+        }
+
+        // 2. Delayed tooltip reveal (1.2s after photo appears)
+        tooltipTimeout = window.setTimeout(() => {
+          if (!isOpen) return;
+          if (tooltip) {
+            tooltip.classList.remove('opacity-0', 'translate-y-3');
+            tooltip.classList.add('opacity-100', 'translate-y-0');
+          }
+        }, 1200);
+
+        // 3. Auto-dismiss timer (6 seconds total)
+        let secondsLeft = 6;
+        if (timerText) {
+          timerText.textContent = `AUTO-CIERRE EN ${secondsLeft}s...`;
+        }
+
+        countdownInterval = window.setInterval(() => {
+          secondsLeft--;
+          if (secondsLeft > 0 && timerText) {
+            timerText.textContent = `AUTO-CIERRE EN ${secondsLeft}s...`;
+          }
+        }, 1000);
+
+        dismissTimeout = window.setTimeout(() => {
+          closeEasterEgg();
+        }, 6000);
+      }
+
+      const onBackdropClick = (e: MouseEvent) => {
+        if (e.target === modal) {
+          closeEasterEgg();
+        }
+      };
+      modal.addEventListener('click', onBackdropClick);
+
+      const onCloseBtnClick = (e: MouseEvent) => {
+        e.stopPropagation();
+        closeEasterEgg();
+      };
+      if (closeBtn) closeBtn.addEventListener('click', onCloseBtnClick);
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && isOpen) {
+          closeEasterEgg();
+        }
+      };
+      window.addEventListener('keydown', onKeyDown);
+
+      const onCustomTrigger = () => {
+        openEasterEgg();
+      };
+      window.addEventListener('laptop-easter-egg', onCustomTrigger);
+
+      const onSlotClick = () => {
+        openEasterEgg();
+      };
+      if (laptopSlot) {
+        laptopSlot.addEventListener('click', onSlotClick);
+      }
+
+      cleanupEasterEgg = () => {
+        modal.removeEventListener('click', onBackdropClick);
+        if (closeBtn) closeBtn.removeEventListener('click', onCloseBtnClick);
+        window.removeEventListener('keydown', onKeyDown);
+        window.removeEventListener('laptop-easter-egg', onCustomTrigger);
+        if (laptopSlot) laptopSlot.removeEventListener('click', onSlotClick);
+        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+        if (dismissTimeout) clearTimeout(dismissTimeout);
+        if (countdownInterval) clearInterval(countdownInterval);
+      };
+    }
+
+    document.addEventListener('astro:page-load', initEasterEgg);
+    document.addEventListener('astro:before-swap', () => {
+      if (cleanupEasterEgg) cleanupEasterEgg();
+    });
+  </script>
+</Layout>

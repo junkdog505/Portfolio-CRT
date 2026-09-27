@@ -1,0 +1,1418 @@
+---
+// Persistent Three.js Canvas for Rustpunk / PSX Lo-Fi 3D across Astro View Transitions
+---
+
+<div id="rust-3d-root" transition:persist="rust-3d-canvas" class="pointer-events-none fixed inset-0 z-30 overflow-hidden" style="view-transition-name: none !important;">
+  <canvas id="rust-canvas" class="pointer-events-none h-full w-full block" style="view-transition-name: none !important;"></canvas>
+  
+  <!-- Subtle Audio/Glitch Indicator -->
+  <div id="glitch-notify" class="pointer-events-none absolute bottom-5 left-5 z-40 hidden rounded border border-amber-600/50 bg-black/90 px-3 py-1 font-mono text-[11px] text-amber-400 backdrop-blur">
+    <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
+    <span id="glitch-text">SISTEMA CONECTADO</span>
+  </div>
+</div>
+
+<script>
+  import * as THREE from 'three';
+
+  // Global persistent state across View Transitions
+  let scene: THREE.Scene;
+  let camera: THREE.PerspectiveCamera;
+  let renderer: THREE.WebGLRenderer;
+  let animationFrameId: number;
+
+  // Web Audio Context for Procedural Retro Sound FX on Click
+  let audioCtx: AudioContext | null = null;
+
+  function getAudioContext(): AudioContext {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
+
+  function playPropSound(propKey: string) {
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      if (propKey === 'laptop') {
+        // =====================================================================
+        // 1. LAPTOP: Sonido de teclado mecánico (2 pulsaciones rápidas "clack-clack")
+        // =====================================================================
+        const strokeTimes = [now, now + 0.065];
+        strokeTimes.forEach((t) => {
+          // Impacto plástico/resorte
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(650 + Math.random() * 150, t);
+          osc.frequency.exponentialRampToValueAtTime(180, t + 0.035);
+          gain.gain.setValueAtTime(0.4, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.04);
+
+          // Clic agudo de interruptor mecánico (Cherry MX / Model M)
+          const clickOsc = ctx.createOscillator();
+          const clickGain = ctx.createGain();
+          clickOsc.type = 'square';
+          clickOsc.frequency.setValueAtTime(2400 + Math.random() * 300, t);
+          clickGain.gain.setValueAtTime(0.2, t);
+          clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+          clickOsc.connect(clickGain);
+          clickGain.connect(ctx.destination);
+          clickOsc.start(t);
+          clickOsc.stop(t + 0.015);
+        });
+
+      } else if (propKey === 'radio') {
+        // =====================================================================
+        // 2. RADIO: Estática analógica de sintonización de radio (FM/AM hiss & hum)
+        // =====================================================================
+        const duration = 0.28;
+        const bufferSize = Math.floor(ctx.sampleRate * duration);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * (0.8 + 0.2 * Math.sin(i * 0.01));
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        // Filtro pasabanda dinámico que barre frecuencias
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.Q.value = 2.5;
+        filter.frequency.setValueAtTime(900, now);
+        filter.frequency.exponentialRampToValueAtTime(2800, now + duration * 0.7);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        // Zumbido eléctrico de fondo (mains hum 120Hz)
+        const hum = ctx.createOscillator();
+        const humGain = ctx.createGain();
+        hum.type = 'sawtooth';
+        hum.frequency.setValueAtTime(120, now);
+        humGain.gain.setValueAtTime(0.08, now);
+        humGain.gain.linearRampToValueAtTime(0.001, now + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        hum.connect(humGain);
+        humGain.connect(ctx.destination);
+
+        noise.start(now);
+        hum.start(now);
+        hum.stop(now + duration);
+
+      } else if (propKey === 'notebook') {
+        // =====================================================================
+        // 3. CUADERNO: Sonido de lápiz/bolígrafo escribiendo (trazos "scritch-scratch")
+        // =====================================================================
+        const strokes = [
+          { start: now, dur: 0.05 },
+          { start: now + 0.065, dur: 0.045 },
+          { start: now + 0.125, dur: 0.06 },
+        ];
+
+        strokes.forEach((st) => {
+          const sLen = Math.floor(ctx.sampleRate * st.dur);
+          const sBuf = ctx.createBuffer(1, sLen, ctx.sampleRate);
+          const sData = sBuf.getChannelData(0);
+          for (let i = 0; i < sLen; i++) {
+            // Textura rugosa de grafito sobre papel
+            sData[i] = (Math.random() * 2 - 1) * Math.sin((i / sLen) * Math.PI);
+          }
+
+          const sSource = ctx.createBufferSource();
+          sSource.buffer = sBuf;
+
+          // Filtro que emula el timbre del papel y la mina del lápiz
+          const sFilter = ctx.createBiquadFilter();
+          sFilter.type = 'bandpass';
+          sFilter.frequency.setValueAtTime(3600 + Math.random() * 400, st.start);
+          sFilter.Q.value = 3.5;
+
+          const sGain = ctx.createGain();
+          sGain.gain.setValueAtTime(0.4, st.start);
+          sGain.gain.exponentialRampToValueAtTime(0.01, st.start + st.dur);
+
+          sSource.connect(sFilter);
+          sFilter.connect(sGain);
+          sGain.connect(ctx.destination);
+
+          sSource.start(st.start);
+        });
+
+      } else if (propKey === 'shovel') {
+        // =====================================================================
+        // 4. PALA: Sonido de cavar tierra y gravilla ("crunch-scrape" terroso)
+        // =====================================================================
+        const duration = 0.32;
+        const bufferSize = Math.floor(ctx.sampleRate * duration);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        // Generar fricción granulada de arena, piedras y tierra húmeda
+        for (let i = 0; i < bufferSize; i++) {
+          const env = Math.exp(-i / (bufferSize * 0.45));
+          const crunch = Math.random() > 0.88 ? (Math.random() * 2 - 1) * 2.0 : (Math.random() * 2 - 1) * 0.5;
+          data[i] = crunch * env;
+        }
+
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+
+        // Filtro terroso (lowpass) + resonancia del metal cortando grava
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, now);
+        filter.frequency.linearRampToValueAtTime(450, now + duration);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        source.start(now);
+
+      } else if (propKey === 'builders') {
+        // =====================================================================
+        // 5. PROYECTOS: Chisporroteo continuo de soldadura de arco (Arc Welding)
+        // =====================================================================
+        const duration = 0.28;
+        const bufferSize = Math.floor(ctx.sampleRate * duration);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        // Arco eléctrico irregular con chispas crepitantes
+        for (let i = 0; i < bufferSize; i++) {
+          const spark = Math.random() > 0.82 ? (Math.random() * 2 - 1) * 1.8 : (Math.random() * 2 - 1) * 0.3;
+          data[i] = spark;
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(2200, now);
+        filter.Q.value = 1.8;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        // Zumbido eléctrico de 120Hz de la máquina de soldar
+        const buzz = ctx.createOscillator();
+        const buzzGain = ctx.createGain();
+        buzz.type = 'sawtooth';
+        buzz.frequency.setValueAtTime(120, now);
+        buzzGain.gain.setValueAtTime(0.18, now);
+        buzzGain.gain.linearRampToValueAtTime(0.001, now + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        buzz.connect(buzzGain);
+        buzzGain.connect(ctx.destination);
+
+        noise.start(now);
+        buzz.start(now);
+        buzz.stop(now + duration);
+
+      } else if (propKey === 'phone') {
+        // =====================================================================
+        // 6. TELÉFONO: Sonido de la rueda giratoria de disco volviendo (Trinquete)
+        // =====================================================================
+        const tickCount = 9;
+        const interval = 0.024; // Frecuencia de los dientes de la rueda
+
+        for (let i = 0; i < tickCount; i++) {
+          const t = now + i * interval;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'triangle';
+          // Tono de cada clic metálico del engranaje de retorno
+          osc.frequency.setValueAtTime(1400 + (i % 2) * 200, t);
+          osc.frequency.exponentialRampToValueAtTime(300, t + 0.012);
+
+          gain.gain.setValueAtTime(0.35, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(t);
+          osc.stop(t + 0.015);
+        }
+
+        // Golpe final de tope mecánico cuando la rueda llega a su lugar
+        const stopTime = now + tickCount * interval;
+        const stopOsc = ctx.createOscillator();
+        const stopGain = ctx.createGain();
+        stopOsc.type = 'sawtooth';
+        stopOsc.frequency.setValueAtTime(450, stopTime);
+        stopOsc.frequency.exponentialRampToValueAtTime(80, stopTime + 0.04);
+        stopGain.gain.setValueAtTime(0.4, stopTime);
+        stopGain.gain.exponentialRampToValueAtTime(0.001, stopTime + 0.04);
+
+        stopOsc.connect(stopGain);
+        stopGain.connect(ctx.destination);
+
+        stopOsc.start(stopTime);
+        stopOsc.stop(stopTime + 0.04);
+      }
+    } catch (e) {
+      // Audio fallback silencioso
+    }
+  }
+
+  // Prop Groups
+  const props: Record<string, THREE.Group> = {};
+  let currentActivePropKey = 'laptop';
+
+  // Interpolation targets for smooth movement between pages
+  const currentPos = new THREE.Vector3(0, 0, 0);
+  const targetPos = new THREE.Vector3(0, 0, 0);
+  let currentScale = 1.0;
+  let targetScale = 1.0;
+
+  // Mouse tilt tracking & auto-return to front (STRICTLY constrained to 3D container slot)
+  let mouseNorm = { x: 0, y: 0 };
+  let isDragging = false;
+  let isHoveringSlot = false;
+  let prevMouse = { x: 0, y: 0 };
+  let manualRot = { x: 0, y: 0 };
+  let glitchTimer = 0;
+
+  // Scene Lights
+  let ambientLight: THREE.AmbientLight | null = null;
+  let keyLight: THREE.DirectionalLight | null = null;
+  let amberRimLight: THREE.DirectionalLight | null = null;
+  let phosphorFillLight: THREE.DirectionalLight | null = null;
+  let sparkLight: THREE.PointLight | null = null;
+
+  function updateThemeLighting() {
+    const isLight = document.documentElement.classList.contains('light-theme');
+    if (isLight) {
+      // MODE LIGHT: Clean, crisp architectural studio lighting
+      if (ambientLight) {
+        ambientLight.color.setHex(0xe2e8f0);
+        ambientLight.intensity = 2.6;
+      }
+      if (keyLight) {
+        keyLight.color.setHex(0xffffff);
+        keyLight.intensity = 2.8;
+      }
+      if (amberRimLight) {
+        amberRimLight.color.setHex(0xfef3c7);
+        amberRimLight.intensity = 1.0;
+      }
+      if (phosphorFillLight) {
+        phosphorFillLight.color.setHex(0x94a3b8);
+        phosphorFillLight.intensity = 1.2;
+      }
+    } else {
+      // MODE DARK: Atmospheric Analog Horror / Rustpunk lighting with warm amber rim glow
+      // Gives soft, moody, high-relief illumination so dark metals stand out beautifully!
+      if (ambientLight) {
+        ambientLight.color.setHex(0x78350f); // Warm bronze-amber ambient lift
+        ambientLight.intensity = 2.6;
+      }
+      if (keyLight) {
+        keyLight.color.setHex(0xfef3c7); // Warm tungsten inspection light
+        keyLight.intensity = 3.2;
+      }
+      if (amberRimLight) {
+        amberRimLight.color.setHex(0xf59e0b); // Rich amber edge silhouette outline
+        amberRimLight.intensity = 4.2;
+      }
+      if (phosphorFillLight) {
+        phosphorFillLight.color.setHex(0x38bdf8); // Cyan CRT phosphor bounce fill
+        phosphorFillLight.intensity = 1.8;
+      }
+    }
+  }
+
+  function initGlobalRustScene() {
+    const canvas = document.getElementById('rust-canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    if (renderer) {
+      updateTargetPositionFromDOM(false);
+      attachSlotListeners();
+      updateThemeLighting();
+      return;
+    }
+
+    const width = window.innerWidth || 1200;
+    const height = window.innerHeight || 800;
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+    camera.position.set(0, 0, 8.5);
+
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: false, // PSX Lo-Fi 3D look
+      powerPreference: 'default',
+    });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+    // Directional & Ambient Lighting (No distance decay, consistent illumination in both left and right slots)
+    ambientLight = new THREE.AmbientLight(0x78350f, 2.6);
+    scene.add(ambientLight);
+
+    keyLight = new THREE.DirectionalLight(0xfef3c7, 3.2);
+    keyLight.position.set(3, 5, 4);
+    scene.add(keyLight);
+
+    amberRimLight = new THREE.DirectionalLight(0xf59e0b, 4.2);
+    amberRimLight.position.set(0, 3, -5);
+    scene.add(amberRimLight);
+
+    phosphorFillLight = new THREE.DirectionalLight(0x38bdf8, 1.8);
+    phosphorFillLight.position.set(-3.5, -1.5, 3);
+    scene.add(phosphorFillLight);
+
+    sparkLight = new THREE.PointLight(0x38bdf8, 0, 6);
+    scene.add(sparkLight);
+
+    updateThemeLighting();
+
+    // Shared Base Materials (Tuned for gorgeous specular and diffuse response in both dark and light themes)
+    const darkMetalMat = new THREE.MeshLambertMaterial({
+      color: 0x3f3f48,
+      flatShading: true,
+    });
+    const rustMetalMat = createRustedMetalMaterial();
+    const woodMat = createWeatheredWoodMaterial();
+    const copperMat = new THREE.MeshLambertMaterial({
+      color: 0xd97706,
+      flatShading: true,
+    });
+    const chromeMat = new THREE.MeshLambertMaterial({
+      color: 0xe2e8f0,
+      flatShading: true,
+    });
+
+    // =========================================================================
+    // 1. PROP: Retro Laptop with Linux Console (PERFECTLY CENTERED AT 0,0,0)
+    // =========================================================================
+    const laptopGroup = new THREE.Group();
+    const laptopInner = new THREE.Group(); // Inner container to balance center of mass
+    laptopGroup.add(laptopInner);
+    
+    // Base Case (lowered so center of entire open laptop is exactly at Y=0)
+    const baseGeo = new THREE.BoxGeometry(2.3, 0.2, 1.7);
+    const laptopBase = new THREE.Mesh(baseGeo, darkMetalMat);
+    laptopBase.position.set(0, -0.45, 0.2);
+    laptopInner.add(laptopBase);
+
+    // Keyboard Plate
+    const kbPlateGeo = new THREE.PlaneGeometry(2.0, 0.9);
+    const kbMat = createKeyboardMaterial();
+    const kbPlate = new THREE.Mesh(kbPlateGeo, kbMat);
+    kbPlate.rotation.x = -Math.PI / 2;
+    kbPlate.position.set(0, -0.34, 0.35);
+    laptopInner.add(kbPlate);
+
+    // Red TrackPoint nub
+    const nubGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.06, 6);
+    const nubMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+    const nub = new THREE.Mesh(nubGeo, nubMat);
+    nub.position.set(0, -0.31, 0.35);
+    laptopInner.add(nub);
+
+    // Lid & Linux Console Screen
+    const lidGroup = new THREE.Group();
+    lidGroup.position.set(0, -0.35, -0.6);
+    lidGroup.rotation.x = -0.32; // Open screen angle
+
+    const lidBezelGeo = new THREE.BoxGeometry(2.3, 1.6, 0.1);
+    const lidBezel = new THREE.Mesh(lidBezelGeo, darkMetalMat);
+    lidBezel.position.set(0, 0.75, 0);
+    lidGroup.add(lidBezel);
+
+    const screenGeo = new THREE.PlaneGeometry(1.9, 1.3);
+    const screenMat = createLinuxTerminalMaterial();
+    const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+    screenMesh.position.set(0, 0.75, 0.06);
+    lidGroup.add(screenMesh);
+
+    laptopInner.add(lidGroup);
+    props['laptop'] = laptopGroup;
+    scene.add(laptopGroup);
+
+    // =========================================================================
+    // 2. PROP: Vintage Sony-Style Transistor Radio (Compact, Centered, No Overhang)
+    // =========================================================================
+    const radioGroup = new THREE.Group();
+    const radioInner = new THREE.Group();
+    radioGroup.add(radioInner);
+    
+    const rBodyGeo = new THREE.BoxGeometry(2.1, 1.35, 0.65);
+    const rBody = new THREE.Mesh(rBodyGeo, darkMetalMat);
+    radioInner.add(rBody);
+
+    const grilleGeo = new THREE.PlaneGeometry(0.85, 1.05);
+    const grilleMat = createRadioGrilleMaterial();
+    const grille = new THREE.Mesh(grilleGeo, grilleMat);
+    grille.position.set(-0.48, 0, 0.33);
+    radioInner.add(grille);
+
+    const tuneGeo = new THREE.PlaneGeometry(0.8, 0.42);
+    const tuneMat = createRadioTuningDialMaterial();
+    const tune = new THREE.Mesh(tuneGeo, tuneMat);
+    tune.position.set(0.48, 0.28, 0.33);
+    radioInner.add(tune);
+
+    const knobGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.16, 12);
+    const knob = new THREE.Mesh(knobGeo, copperMat);
+    knob.rotation.z = Math.PI / 2;
+    knob.position.set(1.12, 0.28, 0);
+    radioInner.add(knob);
+
+    const volGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.12, 10);
+    const vol = new THREE.Mesh(volGeo, copperMat);
+    vol.rotation.x = Math.PI / 2;
+    vol.position.set(0.48, -0.3, 0.33);
+    radioInner.add(vol);
+
+    // Telescopic Antenna: Compact and collapsed flush along the top casing groove (no overhang)
+    const antBaseGeo = new THREE.CylinderGeometry(0.04, 0.05, 0.08, 6);
+    const antBase = new THREE.Mesh(antBaseGeo, copperMat);
+    antBase.position.set(-0.75, 0.71, -0.15);
+    radioInner.add(antBase);
+
+    const antGeo = new THREE.CylinderGeometry(0.02, 0.025, 0.95, 6);
+    const ant = new THREE.Mesh(antGeo, chromeMat);
+    ant.rotation.z = Math.PI / 2; // Tucked flat and flush along top edge
+    ant.position.set(-0.25, 0.72, -0.15);
+    radioInner.add(ant);
+
+    // Balanced centering around (0, 0, 0)
+    radioInner.position.set(0, 0, 0);
+
+    props['radio'] = radioGroup;
+    radioGroup.visible = false;
+    scene.add(radioGroup);
+
+    // =========================================================================
+    // 3. PROP: Open Code Notebook / Cuaderno de Código (Used on /formacion)
+    // =========================================================================
+    const notebookGroup = new THREE.Group();
+    
+    const coverGeo = new THREE.BoxGeometry(2.4, 1.7, 0.06);
+    const coverMat = new THREE.MeshLambertMaterial({ color: 0x3b1d11, flatShading: true });
+    const cover = new THREE.Mesh(coverGeo, coverMat);
+    cover.position.set(0, 0, -0.04);
+    notebookGroup.add(cover);
+
+    const pageLGeo = new THREE.BoxGeometry(1.08, 1.55, 0.03);
+    const pageLMat = createCodeNotebookPageLMaterial();
+    const pageL = new THREE.Mesh(pageLGeo, pageLMat);
+    pageL.position.set(-0.55, 0, 0);
+    pageL.rotation.y = 0.08;
+    notebookGroup.add(pageL);
+
+    const pageRGeo = new THREE.BoxGeometry(1.08, 1.55, 0.03);
+    const pageRMat = createCodeNotebookPageRMaterial();
+    const pageR = new THREE.Mesh(pageRGeo, pageRMat);
+    pageR.position.set(0.55, 0, 0);
+    pageR.rotation.y = -0.08;
+    notebookGroup.add(pageR);
+
+    // Center Spiral Rings
+    for (let i = -6; i <= 6; i++) {
+      const ringGeo = new THREE.TorusGeometry(0.07, 0.016, 4, 8);
+      const ring = new THREE.Mesh(ringGeo, copperMat);
+      ring.position.set(0, i * 0.11, 0.04);
+      notebookGroup.add(ring);
+    }
+
+    // Yellow Pencil
+    const pencilGeo = new THREE.CylinderGeometry(0.035, 0.035, 1.4, 6);
+    const pencilMat = new THREE.MeshLambertMaterial({ color: 0xeab308, flatShading: true });
+    const pencil = new THREE.Mesh(pencilGeo, pencilMat);
+    pencil.rotation.z = 0.65;
+    pencil.position.set(0.18, -0.15, 0.09);
+    notebookGroup.add(pencil);
+
+    props['notebook'] = notebookGroup;
+    notebookGroup.visible = false;
+    scene.add(notebookGroup);
+
+    // =========================================================================
+    // 4. PROP: Auténtica Pala de Construcción Desgastada (Compact, Sleek, Centered)
+    // =========================================================================
+    const shovelGroup = new THREE.Group();
+    const shovelInner = new THREE.Group();
+    shovelGroup.add(shovelInner);
+
+    // Spade Blade: authentic tapered, pointed steel blade (compact & proportional)
+    const bladeShape = new THREE.Shape();
+    bladeShape.moveTo(-0.28, 0.22);
+    bladeShape.lineTo(0.28, 0.22);
+    bladeShape.lineTo(0.26, -0.14);
+    bladeShape.lineTo(0.0, -0.46);
+    bladeShape.lineTo(-0.26, -0.14);
+    bladeShape.closePath();
+
+    const bladeGeo = new THREE.ExtrudeGeometry(bladeShape, {
+      depth: 0.03,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      bevelSize: 0.012,
+      bevelThickness: 0.012,
+    });
+    const bladeMesh = new THREE.Mesh(bladeGeo, rustMetalMat);
+    bladeMesh.rotation.x = 0.12;
+    bladeMesh.position.set(0, -0.42, 0.03);
+    shovelInner.add(bladeMesh);
+
+    // Step Ledge (reborde superior metálico donde se pisa)
+    const stepLedgeGeo = new THREE.BoxGeometry(0.60, 0.05, 0.06);
+    const stepLedge = new THREE.Mesh(stepLedgeGeo, rustMetalMat);
+    stepLedge.position.set(0, -0.18, 0.02);
+    shovelInner.add(stepLedge);
+
+    // Socket (casquillo cónico de unión)
+    const socketGeo = new THREE.CylinderGeometry(0.045, 0.06, 0.20, 8);
+    const socketMesh = new THREE.Mesh(socketGeo, rustMetalMat);
+    socketMesh.position.set(0, -0.07, 0.04);
+    shovelInner.add(socketMesh);
+
+    // Mango de madera torneada desgastada (proporción compacta)
+    const shaftGeo = new THREE.CylinderGeometry(0.038, 0.038, 0.78, 8);
+    const shaft = new THREE.Mesh(shaftGeo, woodMat);
+    shaft.position.set(0, 0.40, 0.04);
+    shovelInner.add(shaft);
+
+    // Empuñadura en "D" clásica
+    const dGripBaseGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.10, 6);
+    const dGripBase = new THREE.Mesh(dGripBaseGeo, rustMetalMat);
+    dGripBase.position.set(0, 0.82, 0.04);
+    shovelInner.add(dGripBase);
+
+    const dArmGeo = new THREE.BoxGeometry(0.032, 0.20, 0.032);
+    const dArmL = new THREE.Mesh(dArmGeo, rustMetalMat);
+    dArmL.position.set(-0.12, 0.94, 0.04);
+    shovelInner.add(dArmL);
+
+    const dArmR = new THREE.Mesh(dArmGeo, rustMetalMat);
+    dArmR.position.set(0.12, 0.94, 0.04);
+    shovelInner.add(dArmR);
+
+    const dHandleGeo = new THREE.CylinderGeometry(0.032, 0.032, 0.26, 8);
+    const dHandle = new THREE.Mesh(dHandleGeo, woodMat);
+    dHandle.rotation.z = Math.PI / 2;
+    dHandle.position.set(0, 1.04, 0.04);
+    shovelInner.add(dHandle);
+
+    // Center of mass balanced at (0, 0, 0)
+    shovelInner.position.set(0, -0.22, 0);
+    // Showcase slight diagonal tilt
+    shovelInner.rotation.z = 0.18;
+
+    props['shovel'] = shovelGroup;
+    shovelGroup.visible = false;
+    scene.add(shovelGroup);
+
+    // =========================================================================
+    // 5. PROP: Figuras Low-Poly Construyendo Máquina (Used on /proyectos)
+    // =========================================================================
+    const buildersGroup = new THREE.Group();
+
+    const coreGeo = new THREE.CylinderGeometry(0.55, 0.55, 1.0, 8);
+    const machineCore = new THREE.Mesh(coreGeo, rustMetalMat);
+    buildersGroup.add(machineCore);
+
+    const beamGeo = new THREE.BoxGeometry(2.1, 0.15, 0.15);
+    const beam1 = new THREE.Mesh(beamGeo, darkMetalMat);
+    beam1.rotation.z = 0.35;
+    buildersGroup.add(beam1);
+
+    const beam2 = new THREE.Mesh(beamGeo, darkMetalMat);
+    beam2.rotation.z = -0.35;
+    buildersGroup.add(beam2);
+
+    const gearGeo = new THREE.CylinderGeometry(0.48, 0.48, 0.12, 10);
+    const gear = new THREE.Mesh(gearGeo, copperMat);
+    gear.position.set(0, 0.2, 0.35);
+    gear.rotation.x = Math.PI / 2;
+    buildersGroup.add(gear);
+
+    const fig1 = createLowPolyFigure(0x1e293b, 0x0f172a);
+    fig1.position.set(-0.95, -0.5, 0.2);
+    fig1.rotation.y = 0.55;
+    buildersGroup.add(fig1);
+
+    const fig2 = createLowPolyFigure(0x334155, 0x111827);
+    fig2.position.set(0.95, -0.5, 0.1);
+    fig2.rotation.y = -0.55;
+    buildersGroup.add(fig2);
+
+    props['builders'] = buildersGroup;
+    buildersGroup.visible = false;
+    scene.add(buildersGroup);
+
+    // =========================================================================
+    // 6. PROP: Teléfono Retro de Disco Giratorio (Used on /contacto)
+    // =========================================================================
+    const phoneGroup = new THREE.Group();
+    const phoneInner = new THREE.Group();
+    phoneGroup.add(phoneInner);
+
+    const pBaseGeo = new THREE.BoxGeometry(1.7, 0.6, 1.7);
+    const pBase = new THREE.Mesh(pBaseGeo, darkMetalMat);
+    pBase.position.set(0, -0.15, 0);
+    phoneInner.add(pBase);
+
+    const dialPlateGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.08, 14);
+    const dialMat = createRotaryDialMaterial();
+    const dialPlate = new THREE.Mesh(dialPlateGeo, dialMat);
+    dialPlate.rotation.x = Math.PI / 4;
+    dialPlate.position.set(0, 0.17, 0.25);
+    phoneInner.add(dialPlate);
+
+    const forkGeo = new THREE.BoxGeometry(0.09, 0.22, 0.09);
+    const forkL = new THREE.Mesh(forkGeo, copperMat);
+    forkL.position.set(-0.45, 0.27, -0.42);
+    phoneInner.add(forkL);
+
+    const forkR = new THREE.Mesh(forkGeo, copperMat);
+    forkR.position.set(0.45, 0.27, -0.42);
+    phoneInner.add(forkR);
+
+    // Auricular
+    const handsetGroup = new THREE.Group();
+    handsetGroup.position.set(0, 0.4, -0.42);
+    handsetGroup.rotation.z = 0.08;
+
+    const hBarGeo = new THREE.CylinderGeometry(0.075, 0.075, 1.3, 6);
+    const hBar = new THREE.Mesh(hBarGeo, darkMetalMat);
+    hBar.rotation.z = Math.PI / 2;
+    handsetGroup.add(hBar);
+
+    const cupGeo = new THREE.CylinderGeometry(0.25, 0.2, 0.28, 10);
+    const cupL = new THREE.Mesh(cupGeo, darkMetalMat);
+    cupL.position.set(-0.65, 0, 0);
+    cupL.rotation.z = Math.PI / 2;
+    handsetGroup.add(cupL);
+
+    const cupR = new THREE.Mesh(cupGeo, darkMetalMat);
+    cupR.position.set(0.65, 0, 0);
+    cupR.rotation.z = -Math.PI / 2;
+    handsetGroup.add(cupR);
+
+    phoneInner.add(handsetGroup);
+
+    props['phone'] = phoneGroup;
+    phoneGroup.visible = false;
+    scene.add(phoneGroup);
+
+    // Attach interaction listeners exclusively to the designated page slot container
+    attachSlotListeners();
+
+    // Snap prop immediately to destination position on initial load
+    updateTargetPositionFromDOM(true);
+
+    // Initial frame render
+    try {
+      renderer.render(scene, camera);
+    } catch (_) {}
+
+    // Start Animation Loop
+    if (!animationFrameId) {
+      animateRustScene(performance.now());
+    }
+  }
+
+  // =========================================================================
+  // Helper: Low-Poly Figure Generator for Builders Prop
+  // =========================================================================
+  function createLowPolyFigure(jacketColor: number, pantsColor: number): THREE.Group {
+    const fig = new THREE.Group();
+    const jMat = new THREE.MeshLambertMaterial({ color: jacketColor, flatShading: true });
+    const pMat = new THREE.MeshLambertMaterial({ color: pantsColor, flatShading: true });
+    const skinMat = new THREE.MeshLambertMaterial({ color: 0xd4a373, flatShading: true });
+
+    const torsoGeo = new THREE.BoxGeometry(0.45, 0.65, 0.32);
+    const torso = new THREE.Mesh(torsoGeo, jMat);
+    torso.position.set(0, 0.5, 0);
+    fig.add(torso);
+
+    const headGeo = new THREE.SphereGeometry(0.18, 6, 5);
+    const head = new THREE.Mesh(headGeo, skinMat);
+    head.position.set(0, 0.95, 0);
+    fig.add(head);
+
+    const armGeo = new THREE.BoxGeometry(0.12, 0.55, 0.12);
+    const armL = new THREE.Mesh(armGeo, jMat);
+    armL.position.set(-0.32, 0.5, 0.18);
+    armL.rotation.x = -0.75;
+    fig.add(armL);
+
+    const armR = new THREE.Mesh(armGeo, jMat);
+    armR.position.set(0.32, 0.5, 0.18);
+    armR.rotation.x = -0.75;
+    fig.add(armR);
+
+    const legGeo = new THREE.BoxGeometry(0.16, 0.65, 0.16);
+    const legL = new THREE.Mesh(legGeo, pMat);
+    legL.position.set(-0.14, -0.15, 0);
+    fig.add(legL);
+
+    const legR = new THREE.Mesh(legGeo, pMat);
+    legR.position.set(0.14, -0.15, 0);
+    fig.add(legR);
+
+    return fig;
+  }
+
+  // =========================================================================
+  // Canvas Texture Generators
+  // =========================================================================
+  function createLinuxTerminalMaterial(): THREE.MeshBasicMaterial {
+    const c = document.createElement('canvas');
+    c.width = 256;
+    c.height = 180;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#05070a';
+    ctx.fillRect(0, 0, 256, 180);
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+    for (let y = 0; y < 180; y += 3) {
+      ctx.fillRect(0, y, 256, 1.5);
+    }
+
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText('dev@station:~# uname -a', 8, 18);
+    ctx.fillText('Linux 6.8.9-arch1 #1 SMP', 8, 32);
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('dev@station:~# neofetch', 8, 48);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText('   .--.      DEV: Software Eng.', 8, 64);
+    ctx.fillText('  |o_o |     OS: Arch Linux x86', 8, 76);
+    ctx.fillText('  |:_/ |     STACK: Astro & 3D', 8, 88);
+    ctx.fillText(' //   \\ \\    UPTIME: Always Live', 8, 100);
+    ctx.fillText('(|     | )   STATUS: Available', 8, 112);
+    ctx.fillText('/\'\\_   _/`\\  ROLE: Creative Dev', 8, 124);
+
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText('dev@station:~# ./start_portfolio', 8, 144);
+    
+    ctx.fillStyle = '#86efac';
+    ctx.fillRect(8, 154, 8, 10);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    return new THREE.MeshBasicMaterial({ map: tex });
+  }
+
+  function createKeyboardMaterial(): THREE.MeshBasicMaterial {
+    const c = document.createElement('canvas');
+    c.width = 256;
+    c.height = 128;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#18181b';
+    ctx.fillRect(0, 0, 256, 128);
+
+    ctx.fillStyle = '#27272a';
+    ctx.strokeStyle = '#09090b';
+    ctx.lineWidth = 2;
+
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 14; col++) {
+        const x = col * 18 + 4;
+        const y = row * 22 + 4;
+        ctx.fillRect(x, y, 16, 18);
+        ctx.strokeRect(x, y, 16, 18);
+      }
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshBasicMaterial({ map: tex });
+  }
+
+  function createRadioGrilleMaterial(): THREE.MeshBasicMaterial {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 160;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#27272a';
+    ctx.fillRect(0, 0, 128, 160);
+
+    ctx.fillStyle = '#d4d4d8';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('S O N Y', 36, 22);
+
+    ctx.fillStyle = '#09090b';
+    for (let y = 35; y < 150; y += 8) {
+      for (let x = 12; x < 116; x += 8) {
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshBasicMaterial({ map: tex });
+  }
+
+  function createRadioTuningDialMaterial(): THREE.MeshBasicMaterial {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 64;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#fef3c7';
+    ctx.fillRect(0, 0, 128, 64);
+
+    ctx.fillStyle = '#1c1917';
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText('FM  88  92  98 104 108', 6, 20);
+    ctx.fillText('AM 530 800 1200 1600', 6, 40);
+
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(68, 6, 3, 52);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshBasicMaterial({ map: tex });
+  }
+
+  function createCodeNotebookPageLMaterial(): THREE.MeshBasicMaterial {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 180;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#fef9c3';
+    ctx.fillRect(0, 0, 128, 180);
+
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1;
+    for (let y = 14; y < 180; y += 12) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(128, y);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '8px monospace';
+    ctx.fillText('// INGENIERÍA & CÓDIGO', 6, 16);
+    ctx.fillText('function initEngine() {', 6, 28);
+    ctx.fillText('  const gl = canvas.ctx;', 6, 40);
+    ctx.fillText('  loadShaders();', 6, 52);
+    ctx.fillText('  setupScene();', 6, 64);
+    ctx.fillText('}', 6, 76);
+    ctx.fillText('----------------', 6, 88);
+    ctx.fillText('struct Viewport {', 6, 100);
+    ctx.fillText('  width: number,', 6, 112);
+    ctx.fillText('  fps: 60,', 6, 124);
+    ctx.fillText('};', 6, 136);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshBasicMaterial({ map: tex });
+  }
+
+  function createCodeNotebookPageRMaterial(): THREE.MeshBasicMaterial {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 180;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#fef9c3';
+    ctx.fillRect(0, 0, 128, 180);
+
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1;
+    for (let y = 14; y < 180; y += 12) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(128, y);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#b91c1c';
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText('// ARQUITECTURA ASTRO', 6, 16);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '8px monospace';
+    ctx.fillText('export default define({', 6, 28);
+    ctx.fillText('  output: "static",', 6, 40);
+    ctx.fillText('  transitions: true,', 6, 52);
+    ctx.fillText('});', 6, 64);
+    ctx.fillText('----------------', 6, 76);
+    ctx.fillText('✓ RENDIMIENTO MÁXIMO', 6, 88);
+    ctx.fillText('✓ ACCESIBILIDAD A11Y', 6, 100);
+    ctx.fillText('✓ CERO CARGA INÚTIL', 6, 112);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshBasicMaterial({ map: tex });
+  }
+
+  function createRotaryDialMaterial(): THREE.MeshBasicMaterial {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 128;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, 128, 128);
+
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(64, 64, 58, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#0f172a';
+    for (let i = 0; i < 10; i++) {
+      const angle = (i / 10) * Math.PI * 1.6 + 0.3;
+      const x = 64 + Math.cos(angle) * 38;
+      const y = 64 + Math.sin(angle) * 38;
+      ctx.beginPath();
+      ctx.arc(x, y, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px monospace';
+      ctx.fillText(i.toString(), x - 3, y + 3);
+      ctx.fillStyle = '#0f172a';
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshBasicMaterial({ map: tex });
+  }
+
+  function createRustedMetalMaterial(): THREE.MeshLambertMaterial {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 128;
+    const ctx = c.getContext('2d')!;
+
+    // Steel base with good mid-tone brightness
+    ctx.fillStyle = '#4b4b54';
+    ctx.fillRect(0, 0, 128, 128);
+
+    // Warm rust and oxide corrosion patches
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.arc(35, 45, 30, 0, Math.PI * 2);
+    ctx.arc(95, 85, 36, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#d97706';
+    ctx.beginPath();
+    ctx.arc(40, 50, 20, 0, Math.PI * 2);
+    ctx.arc(90, 80, 22, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Speckled pitting and metallic grain
+    for (let i = 0; i < 350; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? '#f59e0b' : (Math.random() > 0.3 ? '#27272a' : '#71717a');
+      ctx.fillRect(Math.random() * 128, Math.random() * 128, 2, 2);
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshLambertMaterial({
+      map: tex,
+      flatShading: true,
+    });
+  }
+
+  function createWeatheredWoodMaterial(): THREE.MeshLambertMaterial {
+    const c = document.createElement('canvas');
+    c.width = 64;
+    c.height = 64;
+    const ctx = c.getContext('2d')!;
+
+    ctx.fillStyle = '#a16207';
+    ctx.fillRect(0, 0, 64, 64);
+
+    ctx.fillStyle = '#59290a';
+    for (let y = 0; y < 64; y += 4) {
+      ctx.fillRect(0, y, 64, 1.5);
+    }
+
+    for (let i = 0; i < 100; i++) {
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(Math.random() * 64, Math.random() * 64, 2, 1);
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.magFilter = THREE.NearestFilter;
+    return new THREE.MeshLambertMaterial({
+      map: tex,
+      flatShading: true,
+    });
+  }
+
+  function triggerRustGlitch() {
+    glitchTimer = 14;
+    const notify = document.getElementById('glitch-notify');
+    const text = document.getElementById('glitch-text');
+    if (notify && text) {
+      const msgs = [
+        'SECCIÓN CARGADA // 60 FPS',
+        'OBJETO 3D SINCRONIZADO',
+        'SEÑAL RECIBIDA',
+      ];
+      text.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+      notify.classList.remove('hidden');
+      setTimeout(() => notify.classList.add('hidden'), 900);
+    }
+  }
+
+  // =========================================================================
+  // Reposition & Switch Prop based on Active Page (Without jumping)
+  // =========================================================================
+  function updateTargetPositionFromDOM(immediate = false) {
+    const anchor = document.querySelector('[data-rust-slot]') as HTMLElement | null;
+    const pathname = window.location.pathname;
+
+    let targetPropKey = 'laptop';
+    if (pathname.includes('/sobre-mi')) targetPropKey = 'radio';
+    else if (pathname.includes('/formacion')) targetPropKey = 'notebook';
+    else if (pathname.includes('/experiencia')) targetPropKey = 'shovel';
+    else if (pathname.includes('/proyectos')) targetPropKey = 'builders';
+    else if (pathname.includes('/contacto')) targetPropKey = 'phone';
+
+    // Switch visible prop
+    if (targetPropKey !== currentActivePropKey) {
+      if (props[currentActivePropKey]) props[currentActivePropKey].visible = false;
+      if (props[targetPropKey]) props[targetPropKey].visible = true;
+      currentActivePropKey = targetPropKey;
+    } else {
+      // Ensure the active prop is visible and all others hidden
+      Object.keys(props).forEach((key) => {
+        if (props[key]) props[key].visible = (key === targetPropKey);
+      });
+    }
+
+    if (camera) {
+      const dist = camera.position.z;
+      const vFOV = (camera.fov * Math.PI) / 180;
+      const visibleHeight = 2 * Math.tan(vFOV / 2) * dist;
+      const visibleWidth = visibleHeight * camera.aspect;
+
+      // Default fallback dimensions if anchor is not yet rendered
+      let centerX = window.innerWidth * 0.72;
+      let centerY = window.innerHeight * 0.48;
+      let widthPx = 380;
+      let heightPx = 320;
+
+      if (anchor) {
+        const rect = anchor.getBoundingClientRect();
+        if (rect.width > 20 && rect.height > 20) {
+          centerX = rect.left + rect.width / 2;
+          centerY = rect.top + rect.height / 2;
+          widthPx = rect.width;
+          heightPx = rect.height;
+        }
+      }
+
+      // Screen to 3D world projection at z = 0
+      const ndcX = (centerX / window.innerWidth) * 2 - 1;
+      const ndcY = -(centerY / window.innerHeight) * 2 + 1;
+
+      targetPos.x = ndcX * (visibleWidth / 2);
+      targetPos.y = ndcY * (visibleHeight / 2);
+      targetPos.z = 0;
+
+      // Slot dimensions in 3D world space
+      const slotWorldW = (widthPx / window.innerHeight) * visibleHeight;
+      const slotWorldH = (heightPx / window.innerHeight) * visibleHeight;
+      const slotBoxSize = Math.min(slotWorldW, slotWorldH);
+
+      // Base normalized size relative to model reference dimensions
+      const normSize = slotBoxSize / 2.8;
+
+      // Scale carefully tuned per prop so every object fits strictly within the container box
+      const propScaleMultipliers: Record<string, number> = {
+        laptop: 0.95,
+        radio: 0.88,
+        notebook: 0.86,
+        shovel: 0.80, // Sleek, compact and strictly inside margins
+        builders: 0.82,
+        phone: 0.86,
+      };
+      const mult = propScaleMultipliers[targetPropKey] || 0.85;
+      targetScale = Math.max(0.35, Math.min(0.95, normSize * mult));
+
+      if (immediate) {
+        currentPos.copy(targetPos);
+        currentScale = targetScale;
+        manualRot.x = 0;
+        manualRot.y = 0;
+        const activeGroup = props[currentActivePropKey];
+        if (activeGroup) {
+          activeGroup.position.copy(currentPos);
+          activeGroup.scale.setScalar(currentScale);
+          activeGroup.rotation.set(0, 0, 0);
+        }
+      }
+    }
+  }
+
+  // =========================================================================
+  // Animation Loop with Auto-Return to Front
+  // =========================================================================
+  let lastTime = performance.now();
+
+  function animateRustScene(time: number) {
+    animationFrameId = requestAnimationFrame(animateRustScene);
+    const rawDelta = (time - lastTime) * 0.001;
+    lastTime = time;
+    // Clamp delta to prevent huge jumps if tab was backgrounded
+    const delta = Math.min(rawDelta, 0.05);
+
+    // Delta-timed exponential smoothing: buttery-smooth 60 / 120 / 144 FPS motion
+    const moveFactor = 1 - Math.exp(-8.5 * delta);
+    currentPos.lerp(targetPos, moveFactor);
+    currentScale += (targetScale - currentScale) * moveFactor;
+
+    if (currentPos.distanceTo(targetPos) < 0.002) {
+      currentPos.copy(targetPos);
+    }
+
+    // Auto-return to front: smoothly decay manual rotation to 0
+    if (!isDragging) {
+      const decayFactor = Math.exp(-6.0 * delta);
+      manualRot.x *= decayFactor;
+      manualRot.y *= decayFactor;
+      if (Math.abs(manualRot.x) < 0.0005) manualRot.x = 0;
+      if (Math.abs(manualRot.y) < 0.0005) manualRot.y = 0;
+    }
+
+    const activeGroup = props[currentActivePropKey];
+    if (activeGroup) {
+      activeGroup.position.copy(currentPos);
+      activeGroup.scale.setScalar(currentScale);
+
+      // Mouse influence: subtle front tilt ONLY when pointer is hovering inside the container slot!
+      const subtleTiltX = (isHoveringSlot && !isDragging) ? mouseNorm.y * 0.12 : 0;
+      const subtleTiltY = (isHoveringSlot && !isDragging) ? mouseNorm.x * 0.18 : 0;
+
+      let baseRotX = 0;
+      let baseRotY = 0;
+      let baseRotZ = 0;
+
+      if (currentActivePropKey === 'laptop') {
+        baseRotX = 0.28;
+      } else if (currentActivePropKey === 'notebook') {
+        baseRotX = 0.45;
+      } else if (currentActivePropKey === 'shovel') {
+        baseRotZ = 0.15;
+      } else if (currentActivePropKey === 'phone') {
+        baseRotX = 0.25;
+      }
+
+      const targetX = baseRotX + manualRot.x + subtleTiltX;
+      const targetY = baseRotY + manualRot.y + subtleTiltY;
+      const targetZ = baseRotZ;
+
+      const rotFactor = 1 - Math.exp(-9.0 * delta);
+      activeGroup.rotation.x += (targetX - activeGroup.rotation.x) * rotFactor;
+      activeGroup.rotation.y += (targetY - activeGroup.rotation.y) * rotFactor;
+      activeGroup.rotation.z += (targetZ - activeGroup.rotation.z) * rotFactor;
+
+      // Subtle atmospheric hover
+      activeGroup.position.y += Math.sin(time * 0.002) * 0.015;
+
+      // Spark light flickering for builders prop
+      if (sparkLight) {
+        if (currentActivePropKey === 'builders') {
+          sparkLight.position.set(currentPos.x - 0.3, currentPos.y, currentPos.z + 0.4);
+          sparkLight.intensity = Math.random() > 0.7 ? Math.random() * 3.0 : 0;
+        } else {
+          sparkLight.intensity = 0;
+        }
+      }
+    }
+
+    // Camera glitch vibration
+    if (glitchTimer > 0) {
+      glitchTimer--;
+      camera.position.x = (Math.random() - 0.5) * 0.05;
+      camera.position.y = (Math.random() - 0.5) * 0.05;
+    } else {
+      camera.position.x = 0;
+      camera.position.y = 0;
+    }
+
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
+  }
+
+  // =========================================================================
+  // Slot-Constrained Interactions: Drag & Sound ONLY inside the prop's slot
+  // =========================================================================
+  function attachSlotListeners() {
+    const slot = document.querySelector('[data-rust-slot]') as HTMLElement | null;
+    if (!slot) return;
+
+    slot.style.touchAction = 'none';
+
+    slot.onpointerenter = () => {
+      isHoveringSlot = true;
+    };
+
+    slot.onpointerleave = () => {
+      isHoveringSlot = false;
+      if (!isDragging) {
+        mouseNorm.x = 0;
+        mouseNorm.y = 0;
+      }
+    };
+
+    let pointerDownPos = { x: 0, y: 0 };
+
+    slot.onpointerdown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      isDragging = true;
+      isHoveringSlot = true;
+      prevMouse = { x: e.clientX, y: e.clientY };
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+
+      // Procedural audio triggers STRICTLY when clicking inside the slot container!
+      playPropSound(currentActivePropKey);
+      triggerRustGlitch();
+
+      try {
+        slot.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    };
+
+    slot.onpointermove = (e: PointerEvent) => {
+      const rect = slot.getBoundingClientRect();
+      const relX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const relY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      mouseNorm.x = Math.max(-1, Math.min(1, relX));
+      mouseNorm.y = Math.max(-1, Math.min(1, relY));
+
+      if (isDragging) {
+        const deltaX = e.clientX - prevMouse.x;
+        const deltaY = e.clientY - prevMouse.y;
+        manualRot.y += deltaX * 0.012;
+        manualRot.x += deltaY * 0.009;
+        prevMouse = { x: e.clientX, y: e.clientY };
+      }
+    };
+
+    slot.onpointerup = (e: PointerEvent) => {
+      isDragging = false;
+      const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+      if (dist < 12 && currentActivePropKey === 'laptop') {
+        window.dispatchEvent(new CustomEvent('laptop-easter-egg'));
+      }
+      try {
+        slot.releasePointerCapture(e.pointerId);
+      } catch (_) {}
+    };
+
+    slot.onpointercancel = () => {
+      isDragging = false;
+      isHoveringSlot = false;
+    };
+  }
+
+  // Safety fallback for pointer release outside window
+  window.addEventListener('pointerup', () => {
+    isDragging = false;
+  });
+
+  function handleResize() {
+    if (!renderer || !camera) return;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    updateTargetPositionFromDOM(false);
+  }
+
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('scroll', () => updateTargetPositionFromDOM(false), { passive: true });
+
+  // Immediate initialization: start Three.js without waiting solely for deferred events
+  if (typeof window !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        initGlobalRustScene();
+      });
+    } else {
+      initGlobalRustScene();
+    }
+    window.addEventListener('load', () => {
+      initGlobalRustScene();
+      updateTargetPositionFromDOM(false);
+    });
+  }
+
+  // Astro View Transitions Hooks
+  document.addEventListener('astro:page-load', () => {
+    initGlobalRustScene();
+    requestAnimationFrame(() => {
+      updateTargetPositionFromDOM(false);
+      attachSlotListeners();
+      updateThemeLighting();
+    });
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    requestAnimationFrame(() => {
+      updateTargetPositionFromDOM(false);
+      attachSlotListeners();
+      updateThemeLighting();
+    });
+  });
+
+  // Observe theme class changes to adjust 3D lighting dynamically
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(() => {
+      updateThemeLighting();
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+</script>

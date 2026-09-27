@@ -1,0 +1,253 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const skills = [
+  {
+    category: 'COMPUTACIÓN GRÁFICA & 3D',
+    code: 'MOD_GFX',
+    items: [
+      { name: 'Three.js & WebGL Core', level: 'Avanzado', desc: 'Render pipelines PBR, post-processing y geometrías procedurales.' },
+      { name: 'GLSL Shaders (Vertex & Fragment)', level: 'Avanzado', desc: 'Efectos de distorsión, fluidos, dither y shaders analógicos.' },
+      { name: 'Optimización 3D & Draw Calls', level: 'Especialista', desc: 'InstancedMesh, compresión Draco/KTX2 y 60 FPS en móvil.' },
+      { name: 'Canvas 2D & Web Audio API', level: 'Avanzado', desc: 'Sintetizadores de audio procedural y visualizadores de audio reactivos.' },
+    ],
+  },
+  {
+    category: 'ARQUITECTURA WEB & FRONTEND',
+    code: 'MOD_ARCH',
+    items: [
+      { name: 'Astro 5 & Islands Architecture', level: 'Especialista', desc: 'Estrategias de renderizado estático e hidratación parcial selectiva.' },
+      { name: 'TypeScript Estricto', level: 'Avanzado', desc: 'Sistemas de tipos complejos, genéricos y contratos de datos seguros.' },
+      { name: 'React / Next.js', level: 'Avanzado', desc: 'State management, Suspense, Server Components y hooks personalizados.' },
+      { name: 'Tailwind CSS & Design Systems', level: 'Especialista', desc: 'Arquitectura de tokens de diseño, CSS moderno y accesibilidad WCAG AA.' },
+    ],
+  },
+  {
+    category: 'BACKEND, DEVOPS & INFRA',
+    code: 'MOD_OPS',
+    items: [
+      { name: 'Node.js, Express & Fastify', level: 'Avanzado', desc: 'Microservicios de baja latencia, APIs RESTful y streaming WebSockets.' },
+      { name: 'PostgreSQL, Redis & SQL', level: 'Avanzado', desc: 'Diseño relacional, consultas optimizadas, caching e indexación.' },
+      { name: 'Docker & Flujos CI/CD GitHub', level: 'Intermedio+', desc: 'Contenedores multi-etapa, pipelines automatizados y despliegues estables.' },
+      { name: 'Auditoría Core Web Vitals & LCP', level: 'Especialista', desc: 'Métricas de carga instantánea (<800ms LCP) y 100 en Google Lighthouse.' },
+    ],
+  },
+];
+---
+
+<Layout title="Sobre Mí | Perfil de Ingeniero de Software & Creative Developer" description="Perfil profesional, competencias técnicas, filosofía de ingeniería y trayectoria en computación gráfica.">
+  <main class="max-w-5xl mx-auto px-4 sm:px-6">
+    
+    <!-- Top Grid: 3D Sony Radio on the LEFT / Bio on the RIGHT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-12">
+      
+      <!-- Left Column: 3D Slot for Vintage Sony Radio -->
+      <div class="lg:col-span-5 flex justify-center order-2 lg:order-1">
+        <div class="w-full max-w-md aspect-square border border-[#451a03] bg-[#0c0c10]/85 p-4 relative shadow-2xl flex flex-col backdrop-blur-sm tech-card">
+          <!-- Corner reticles -->
+          <div class="tech-corner-tl"></div>
+          <div class="tech-corner-tr"></div>
+          <div class="tech-corner-bl"></div>
+          <div class="tech-corner-br"></div>
+
+          <!-- Radio Card Header with Waveform SVG -->
+          <div class="flex items-center justify-between text-[11px] text-amber-500 font-mono mb-2 border-b border-amber-900/40 pb-1.5">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12h2l3-6 4 12 3-8 2 5 2-3h4"></path>
+              </svg>
+              <span class="crt-text-amber font-bold">RECEPTOR RETRO SONY</span>
+            </div>
+            <span class="text-amber-400 animate-pulse font-bold text-[10px]">● FM: 98.5 MHz</span>
+          </div>
+          
+          <!-- 3D Anchor for Vintage Radio (on the LEFT side) -->
+          <div
+            id="scene-anchor"
+            data-rust-slot="radio"
+            class="w-full flex-1 min-h-[300px] flex items-center justify-center cursor-grab select-none relative"
+            title="Haz clic o arrastra para rotar la radio retro (emite estática analógica de radio)"
+          >
+            <!-- 3D Sony Radio aligns here -->
+          </div>
+
+          <!-- Radio Footer Telemetry -->
+          <div class="flex items-center justify-between text-[10px] text-zinc-500 font-mono border-t border-amber-900/30 pt-1.5 mt-1">
+            <span>SINTONIZADOR ANALÓGICO // 1978</span>
+            <span class="text-amber-500 crt-text-amber font-bold">SONIDO: ESTÁTICA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Profile & Bio -->
+      <div class="lg:col-span-7 order-1 lg:order-2 space-y-4">
+        <!-- Reticle header badge -->
+        <div class="inline-flex items-center gap-2 border border-amber-800/80 bg-amber-950/30 px-3 py-1 text-xs text-amber-400 font-bold crt-text-amber">
+          <span>&gt;_ REGISTRO: DEV_PROFILE [0x01]</span>
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl font-black text-zinc-100 uppercase tracking-tight">
+          SOBRE MÍ
+        </h1>
+
+        <p class="text-sm sm:text-base text-zinc-300 leading-relaxed border-l-2 border-amber-700/80 pl-4 bg-[#121116]/70 py-2.5">
+          Ingeniero de software con más de 5 años de trayectoria profesional diseñando plataformas web contemporáneas, experiencias interactivas en 3D en tiempo real y arquitecturas backend altamente resilientes.
+        </p>
+
+        <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          Combino fundamentos sólidos de computación gráfica (<strong class="text-zinc-200">WebGL, Three.js y Shaders GLSL</strong>) con la precisión de la ingeniería de software moderna (<strong class="text-zinc-200">Astro, TypeScript estricto, React y Node.js</strong>). Mi obsesión es la eficiencia técnica: cero librerías redundantes, interfaces accesibles bajo el estándar <strong class="text-zinc-200">WCAG AA</strong> y fluidez constante a <strong class="text-amber-400 crt-text-amber">60 FPS</strong>.
+        </p>
+
+        <!-- Metric badges -->
+        <div class="grid grid-cols-3 gap-2.5 pt-2">
+          <div class="border border-amber-900/40 bg-[#0c0c10]/90 p-2.5 text-center">
+            <span class="block text-xl font-black text-amber-500 crt-text-amber font-mono">+5 AÑOS</span>
+            <span class="text-[10px] text-zinc-400 uppercase font-mono">Experiencia</span>
+          </div>
+          <div class="border border-amber-900/40 bg-[#0c0c10]/90 p-2.5 text-center">
+            <span class="block text-xl font-black text-emerald-400 crt-text-green font-mono">60 FPS</span>
+            <span class="text-[10px] text-zinc-400 uppercase font-mono">Rendimiento 3D</span>
+          </div>
+          <div class="border border-amber-900/40 bg-[#0c0c10]/90 p-2.5 text-center">
+            <span class="block text-xl font-black text-amber-500 crt-text-amber font-mono">99+</span>
+            <span class="text-[10px] text-zinc-400 uppercase font-mono">Core Web Vitals</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Philosophy & General Facts Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      
+      <!-- Philosophy Card (2 cols) -->
+      <div class="md:col-span-2 border border-amber-900/50 bg-[#111116] p-6 space-y-4 text-xs sm:text-sm text-zinc-300 leading-relaxed relative tech-card">
+        <div class="tech-corner-tl"></div>
+        <div class="tech-corner-tr"></div>
+        <div class="tech-corner-bl"></div>
+        <div class="tech-corner-br"></div>
+
+        <div class="flex items-center justify-between border-b border-amber-900/30 pb-2">
+          <h2 class="text-xs font-bold text-amber-500 uppercase tracking-widest crt-text-amber">// PRINCIPIOS DE INGENIERÍA</h2>
+          <span class="text-[10px] text-zinc-500 font-mono">[SYS_CORE]</span>
+        </div>
+
+        <div class="space-y-3.5">
+          <div class="flex items-start gap-3">
+            <span class="text-amber-500 font-mono font-bold text-xs select-none">[01]</span>
+            <div>
+              <strong class="text-zinc-100 block mb-0.5">Rendimiento Determinista por Diseño</strong>
+              <p class="text-zinc-400 text-xs">
+                Uso de arquitecturas basadas en islas estáticas con Astro, eliminando sobrecargas de JavaScript en el hilo principal del navegador. Optimización matemática de shaders y reutilización estricta de geometrías.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <span class="text-amber-500 font-mono font-bold text-xs select-none">[02]</span>
+            <div>
+              <strong class="text-zinc-100 block mb-0.5">Tipado Fuerte & Tolerancia a Fallos</strong>
+              <p class="text-zinc-400 text-xs">
+                TypeScript en modo estricto en el 100% de la base de código. Validación rigurosa de entradas en tiempo de ejecución (Zod / Schemas) para garantizar la integridad entre frontend y backend.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <span class="text-amber-500 font-mono font-bold text-xs select-none">[03]</span>
+            <div>
+              <strong class="text-zinc-100 block mb-0.5">Diseño Accesible & Universal</strong>
+              <p class="text-zinc-400 text-xs">
+                Navegación nativa por teclado, estados de foco explícitos, soporte para lectores de pantalla y contraste cromático calibrado para cumplir los criterios de conformidad WCAG AA.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Facts Card (1 col) -->
+      <div class="border border-amber-900/50 bg-[#111116] p-6 flex flex-col justify-between text-xs relative tech-card">
+        <div class="tech-corner-tl"></div>
+        <div class="tech-corner-tr"></div>
+        <div class="tech-corner-bl"></div>
+        <div class="tech-corner-br"></div>
+
+        <div>
+          <div class="flex items-center justify-between border-b border-amber-900/30 pb-2 mb-4">
+            <h2 class="text-xs font-bold text-amber-500 uppercase tracking-widest crt-text-amber">// TELEMETRÍA</h2>
+            <span class="text-emerald-400 font-mono text-[10px]">● ACTIVO</span>
+          </div>
+
+          <ul class="space-y-3 font-mono text-zinc-300">
+            <li class="flex justify-between border-b border-zinc-800/60 pb-1.5">
+              <span class="text-zinc-500">DISPONIBILIDAD:</span>
+              <span class="text-emerald-400 font-bold">Inmediata</span>
+            </li>
+            <li class="flex justify-between border-b border-zinc-800/60 pb-1.5">
+              <span class="text-zinc-500">MODALIDAD:</span>
+              <span class="text-zinc-200">Remoto / Híbrido</span>
+            </li>
+            <li class="flex justify-between border-b border-zinc-800/60 pb-1.5">
+              <span class="text-zinc-500">ENFOQUE:</span>
+              <span class="text-zinc-200">Full-Stack & 3D</span>
+            </li>
+            <li class="flex justify-between border-b border-zinc-800/60 pb-1.5">
+              <span class="text-zinc-500">IDIOMAS:</span>
+              <span class="text-zinc-200">Español & Inglés (C1)</span>
+            </li>
+            <li class="flex justify-between pb-1.5">
+              <span class="text-zinc-500">UBICACIÓN:</span>
+              <span class="text-zinc-200">América / Global</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-amber-900/30">
+          <a href="/contacto" class="crt-btn text-xs w-full py-2.5 justify-center">
+            <span>[ + ] INICIAR CONVERSACIÓN</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Technical Skills Matrix -->
+    <div class="border-t border-amber-900/50 pt-8 mb-12">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xs font-bold text-amber-500 uppercase tracking-widest crt-text-amber flex items-center gap-2">
+          <span>[ // MATRIZ DE COMPETENCIAS TÉCNICAS // ]</span>
+        </h2>
+        <span class="text-zinc-500 font-mono text-[11px]">[TOTAL: 3 MÓDULOS]</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {skills.map((group) => (
+          <div class="border border-amber-900/40 bg-[#111116] p-5 relative tech-card">
+            <div class="tech-corner-tl"></div>
+            <div class="tech-corner-tr"></div>
+            <div class="tech-corner-bl"></div>
+            <div class="tech-corner-br"></div>
+
+            <div class="flex items-center justify-between mb-4 border-b border-amber-900/30 pb-2">
+              <h3 class="text-xs font-bold text-amber-400 uppercase font-mono">{group.category}</h3>
+              <span class="text-[9px] font-mono text-zinc-500 bg-[#0c0c10] px-1.5 py-0.5 border border-amber-900/30">{group.code}</span>
+            </div>
+
+            <ul class="space-y-3">
+              {group.items.map((skill, idx) => (
+                <li class="text-xs font-mono border-b border-zinc-900/80 pb-2 last:border-b-0 last:pb-0">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-zinc-200 font-semibold flex items-center gap-1.5">
+                      <span class="text-amber-500 text-[10px]">[{String(idx + 1).padStart(2, '0')}]</span>
+                      {skill.name}
+                    </span>
+                    <span class="text-[9px] text-amber-500 crt-text-amber">{skill.level}</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-500 font-sans pl-5 leading-normal">{skill.desc}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,413 @@
+---
+interface Props {
+  color?: string;
+  backgroundColor?: string;
+  speed?: number;
+  curvature?: number;
+  scanlineStrength?: number;
+  scanlineFrequency?: number;
+  waveAmplitude?: number;
+  waveFrequency?: number;
+  bloom?: number;
+  bloomRadius?: number;
+  noise?: number;
+  vignette?: number;
+  brightness?: number;
+  pixelation?: number;
+  rgbShift?: number;
+  mouseReact?: boolean;
+  mouseStrength?: number;
+  dpr?: number;
+  fps?: number;
+  paused?: boolean;
+  className?: string;
+  autoTheme?: boolean;
+}
+
+const {
+  color = '#f59e0b',
+  backgroundColor = '#07060a',
+  speed = 0.45,
+  curvature = 0.22,
+  scanlineStrength = 0.22,
+  scanlineFrequency = 200,
+  waveAmplitude = 0.25,
+  waveFrequency = 2.4,
+  bloom = 1.4,
+  bloomRadius = 1,
+  noise = 0.05,
+  vignette = 0.15,
+  brightness = 1.2,
+  pixelation = 1,
+  rgbShift = 0.012,
+  mouseReact = true,
+  mouseStrength = 0.45,
+  dpr = 1,
+  fps = 60,
+  paused = false,
+  className = '',
+  autoTheme = true,
+} = Astro.props;
+---
+
+<div
+  class={`crt-warp-container absolute inset-0 w-full h-full overflow-hidden select-none pointer-events-none ${className}`}
+  data-color={color}
+  data-bgcolor={backgroundColor}
+  data-speed={speed}
+  data-curvature={curvature}
+  data-scanline-strength={scanlineStrength}
+  data-scanline-freq={scanlineFrequency}
+  data-wave-amp={waveAmplitude}
+  data-wave-freq={waveFrequency}
+  data-bloom={bloom}
+  data-bloom-radius={bloomRadius}
+  data-noise={noise}
+  data-vignette={vignette}
+  data-brightness={brightness}
+  data-pixelation={pixelation}
+  data-rgb-shift={rgbShift}
+  data-mouse-react={mouseReact ? '1' : '0'}
+  data-mouse-strength={mouseStrength}
+  data-dpr={dpr}
+  data-fps={fps}
+  data-paused={paused ? '1' : '0'}
+  data-auto-theme={autoTheme ? '1' : '0'}
+>
+</div>
+
+<script>
+  import * as THREE from 'three';
+
+  const vertexShader = `
+varying vec2 vUv;
+
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 1.0);
+}
+`;
+
+  const fragmentShader = `
+precision highp float;
+
+varying vec2 vUv;
+uniform vec2 uResolution;
+uniform float uTime;
+uniform vec3 uColor;
+uniform vec3 uBackgroundColor;
+uniform float uCurvature;
+uniform float uScanlineStrength;
+uniform float uScanlineFrequency;
+uniform float uWaveAmplitude;
+uniform float uWaveFrequency;
+uniform float uBloom;
+uniform float uBloomRadius;
+uniform float uNoise;
+uniform float uVignette;
+uniform float uBrightness;
+uniform float uPixelation;
+uniform float uRgbShift;
+uniform vec2 uPointer;
+uniform float uMouseStrength;
+uniform float uMouseReact;
+uniform float uIsLight;
+
+float hash21(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+
+vec2 crtCurve(vec2 uv, float radius) {
+  vec2 p = (uv - 0.5) * 2.0;
+  float safeRadius = max(radius, 1.415);
+  float cornerScale = safeRadius / sqrt(max(safeRadius * safeRadius - 2.0, 0.001));
+  p = safeRadius * p / sqrt(max(safeRadius * safeRadius - dot(p, p), 0.001));
+  p /= cornerScale;
+  return p * 0.5 + 0.5;
+}
+
+float referencePlasma(vec2 uv, float t) {
+  float frequencyScale = max(uWaveFrequency / 2.2, 0.001);
+  uv = (uv - 0.5) * frequencyScale + 0.5;
+
+  float scanline = 0.5 - 0.5 * cos(uv.y * 3.14159265 * uScanlineFrequency);
+  scanline = mix(1.0, scanline, uScanlineStrength);
+
+  uv *= vec2(80.0, 24.0);
+  uv = ceil(uv);
+  uv /= vec2(80.0, 24.0);
+
+  float amplitude = uWaveAmplitude / 0.28;
+  float field = 0.0;
+  field += 0.7 * sin(0.5 * uv.x + t / 5.0);
+  field += 3.0 * sin(1.6 * uv.y + t / 5.0);
+  field += sin(10.0 * (uv.y * sin(t / 2.0) + uv.x * cos(t / 5.0)) + t / 2.0);
+
+  float cx = uv.x + 0.5 * sin(t / 2.0);
+  float cy = uv.y + 0.5 * cos(t / 4.0);
+  field += 0.4 * sin(sqrt(100.0 * cx * cx + 100.0 * cy * cy + 1.0) + t);
+  field += 0.9 * sin(sqrt(75.0 * cx * cx + 25.0 * cy * cy + 1.0) + t);
+  field -= 1.4 * sin(sqrt(256.0 * cx * cx + 25.0 * cy * cy + 1.0) + t);
+  field += 0.3 * sin(0.5 * uv.y + uv.x + sin(t));
+
+  return scanline * floor(3.0 * (0.5 + 0.499 * sin(field * amplitude))) / 3.0;
+}
+
+void main() {
+  vec2 uv = vUv;
+  if (uPixelation > 1.001) {
+    vec2 cells = max(uResolution / uPixelation, vec2(1.0));
+    uv = (floor(uv * cells) + 0.5) / cells;
+  }
+
+  float curveRadius = 1.1 + 0.42 / max(uCurvature, 0.001);
+  if (uMouseReact > 0.5) {
+    curveRadius *= exp(-uPointer.y * uMouseStrength * 0.4);
+  }
+  vec2 curvedUv = crtCurve(uv, curveRadius);
+  if (uMouseReact > 0.5) {
+    curvedUv.x -= uPointer.x * uMouseStrength * 0.035;
+  }
+
+  // Base plasma signal
+  float signal = referencePlasma(curvedUv, uTime);
+
+  // Multi-tap bloom halo
+  float radius = 0.01 * uBloomRadius;
+  float glow = signal * 0.2;
+  glow += referencePlasma(curvedUv + vec2(radius, 0.0), uTime) * 0.12;
+  glow += referencePlasma(curvedUv - vec2(radius, 0.0), uTime) * 0.12;
+  glow += referencePlasma(curvedUv + vec2(0.0, radius), uTime) * 0.12;
+  glow += referencePlasma(curvedUv - vec2(0.0, radius), uTime) * 0.12;
+  glow += referencePlasma(curvedUv + vec2(radius), uTime) * 0.08;
+  glow += referencePlasma(curvedUv - vec2(radius), uTime) * 0.08;
+
+  // Screen edge vignette falloff
+  float edge = clamp(1.0 - dot(vUv - 0.5, vUv - 0.5) * 2.0, 0.0, 1.0);
+  float edgeFade = mix(1.0, smoothstep(0.0, 1.0, edge), uVignette);
+  float waveMask = clamp(signal * 0.82 + glow * 0.52, 0.0, 1.0) * edgeFade;
+
+  // Scanline modulation
+  float scanline = 0.5 - 0.5 * cos(curvedUv.y * 3.14159265 * uScanlineFrequency);
+  scanline = mix(1.0, scanline, uScanlineStrength);
+
+  // Subtle analog grain
+  float grain = hash21(gl_FragCoord.xy + vec2(fract(uTime) * 173.0));
+
+  vec3 color;
+
+  if (uIsLight > 0.5) {
+    // =========================================================================
+    // LIGHT MODE: Crisp Technical Laboratory Blueprint (High contrast & clean)
+    // Avoid chromatic color corruptions, render as delicate warm-amber contours
+    // =========================================================================
+    float pat = clamp(signal * 0.7 + glow * 0.35, 0.0, 1.0);
+    // Darker amber / warm slate ink on clean background
+    vec3 inkColor = mix(uColor, vec3(0.25, 0.3, 0.4), 0.2);
+    color = mix(uBackgroundColor, inkColor, pat * 0.28 * edgeFade);
+    color = mix(color, color * scanline, uScanlineStrength * 0.4);
+    // Very gentle micro-texture (no dirty blotches)
+    color += (grain - 0.5) * (uNoise * 0.2);
+  } else {
+    // =========================================================================
+    // DARK MODE: Authentic Glowing Phosphor CRT Monitor
+    // =========================================================================
+    float redSignal = referencePlasma(curvedUv + vec2(uRgbShift, 0.0), uTime);
+    float blueSignal = referencePlasma(curvedUv - vec2(uRgbShift, 0.0), uTime);
+    vec3 channelSignal = vec3(redSignal, signal, blueSignal);
+
+    vec3 waveColor = uColor * (0.35 + signal * 0.75 + glow * uBloom * 0.65);
+    waveColor += (channelSignal - signal) * 0.35;
+    waveColor = max(waveColor * uBrightness, vec3(0.0));
+
+    color = mix(uBackgroundColor, waveColor, waveMask);
+    color += (grain - 0.5) * uNoise;
+  }
+
+  // Boundary check for curved CRT barrel edges
+  if (curvedUv.x < 0.0 || curvedUv.x > 1.0 || curvedUv.y < 0.0 || curvedUv.y > 1.0) {
+    color = uBackgroundColor;
+  }
+
+  gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+}
+`;
+
+  function initCRTWarpComponents() {
+    const containers = document.querySelectorAll<HTMLElement>('.crt-warp-container');
+
+    containers.forEach((container) => {
+      if (container.querySelector('canvas')) return;
+
+      const rawColor = container.dataset.color || '#f59e0b';
+      const rawBgColor = container.dataset.bgcolor || '#07060a';
+      const speed = parseFloat(container.dataset.speed || '0.45');
+      const curvature = parseFloat(container.dataset.curvature || '0.22');
+      const scanlineStr = parseFloat(container.dataset.scanlineStrength || '0.22');
+      const scanlineFreq = parseFloat(container.dataset.scanlineFreq || '200');
+      const waveAmp = parseFloat(container.dataset.waveAmp || '0.25');
+      const waveFreq = parseFloat(container.dataset.waveFreq || '2.4');
+      const bloom = parseFloat(container.dataset.bloom || '1.4');
+      const bloomRadius = parseFloat(container.dataset.bloomRadius || '1');
+      const noise = parseFloat(container.dataset.noise || '0.05');
+      const vignette = parseFloat(container.dataset.vignette || '0.15');
+      const brightness = parseFloat(container.dataset.brightness || '1.2');
+      const pixelation = parseFloat(container.dataset.pixelation || '1');
+      const rgbShift = parseFloat(container.dataset.rgbShift || '0.012');
+      const mouseReact = container.dataset.mouseReact === '1';
+      const mouseStrength = parseFloat(container.dataset.mouseStrength || '0.45');
+      const dpr = parseFloat(container.dataset.dpr || '1');
+      const fps = Math.max(1, parseFloat(container.dataset.fps || '60'));
+      const paused = container.dataset.paused === '1';
+      const autoTheme = container.dataset.autoTheme === '1';
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const geometry = new THREE.PlaneGeometry(2, 2);
+
+      const isLightInitially = autoTheme && document.documentElement.classList.contains('light-theme');
+      const effectiveColor = isLightInitially ? '#b45309' : rawColor;
+      const effectiveBgColor = isLightInitially ? '#f8fafc' : rawBgColor;
+
+      const material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+          uResolution: { value: new THREE.Vector2(1, 1) },
+          uTime: { value: 0 },
+          uSpeed: { value: speed },
+          uColor: { value: new THREE.Color(effectiveColor) },
+          uBackgroundColor: { value: new THREE.Color(effectiveBgColor) },
+          uCurvature: { value: curvature },
+          uScanlineStrength: { value: scanlineStr },
+          uScanlineFrequency: { value: scanlineFreq },
+          uWaveAmplitude: { value: waveAmp },
+          uWaveFrequency: { value: waveFreq },
+          uBloom: { value: bloom },
+          uBloomRadius: { value: bloomRadius },
+          uNoise: { value: noise },
+          uVignette: { value: vignette },
+          uBrightness: { value: brightness },
+          uPixelation: { value: pixelation },
+          uRgbShift: { value: rgbShift },
+          uPointer: { value: new THREE.Vector2(0, 0) },
+          uMouseStrength: { value: mouseStrength },
+          uMouseReact: { value: mouseReact ? 1 : 0 },
+          uIsLight: { value: isLightInitially ? 1.0 : 0.0 },
+        },
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      const renderer = new THREE.WebGLRenderer({
+        antialias: false,
+        alpha: false,
+        powerPreference: 'high-performance',
+      });
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dpr));
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
+      renderer.domElement.style.display = 'block';
+      renderer.domElement.style.pointerEvents = 'none';
+      container.appendChild(renderer.domElement);
+
+      const resize = () => {
+        const width = Math.max(window.innerWidth || container.clientWidth, 1);
+        const height = Math.max(window.innerHeight || container.clientHeight, 1);
+        renderer.setSize(width, height, false);
+        material.uniforms.uResolution.value.set(renderer.domElement.width, renderer.domElement.height);
+      };
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(container);
+      window.addEventListener('resize', resize);
+      resize();
+
+      let visible = true;
+      const visibilityObserver = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+      });
+      visibilityObserver.observe(container);
+
+      const pointerTarget = new THREE.Vector2(0, 0);
+      const pointerCurrent = new THREE.Vector2(0, 0);
+      const clock = new THREE.Clock();
+      let animId: number | null = null;
+      let lastFrame = 0;
+
+      // Theme synchronization
+      const syncThemeColors = () => {
+        if (!autoTheme) return;
+        const isLight = document.documentElement.classList.contains('light-theme');
+        material.uniforms.uIsLight.value = isLight ? 1.0 : 0.0;
+        material.uniforms.uColor.value.set(isLight ? '#b45309' : rawColor);
+        material.uniforms.uBackgroundColor.value.set(isLight ? '#f8fafc' : rawBgColor);
+      };
+
+      const themeObserver = new MutationObserver(syncThemeColors);
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+      const render = (now: number) => {
+        animId = requestAnimationFrame(render);
+        if (!visible || document.hidden) return;
+
+        const interval = 1000 / fps;
+        if (now - lastFrame < interval) return;
+        lastFrame = now - ((now - lastFrame) % interval);
+
+        const delta = Math.min(clock.getDelta(), 0.1);
+        if (!paused) {
+          material.uniforms.uTime.value += delta * material.uniforms.uSpeed.value;
+        }
+
+        pointerCurrent.lerp(pointerTarget, 0.08);
+        material.uniforms.uPointer.value.copy(pointerCurrent);
+        renderer.render(scene, camera);
+      };
+
+      render(0);
+
+      // Track pointer across whole window
+      const onPointerMove = (event: PointerEvent | MouseEvent) => {
+        pointerTarget.set(
+          (event.clientX / Math.max(window.innerWidth, 1)) * 2 - 1,
+          -(event.clientY / Math.max(window.innerHeight, 1)) * 2 + 1
+        );
+      };
+
+      const onPointerLeave = () => {
+        pointerTarget.set(0, 0);
+      };
+
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerleave', onPointerLeave);
+
+      // Clean up on Astro View Transitions
+      document.addEventListener(
+        'astro:before-swap',
+        () => {
+          if (animId !== null) cancelAnimationFrame(animId);
+          resizeObserver.disconnect();
+          visibilityObserver.disconnect();
+          themeObserver.disconnect();
+          window.removeEventListener('resize', resize);
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerleave', onPointerLeave);
+          geometry.dispose();
+          material.dispose();
+          renderer.dispose();
+          renderer.domElement.remove();
+        },
+        { once: true }
+      );
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initCRTWarpComponents();
+  });
+</script>

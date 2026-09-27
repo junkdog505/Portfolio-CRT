@@ -1,0 +1,141 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import RustScene from '../components/RustScene.astro';
+import CRTWarp from '../components/CRTWarp.astro';
+import CRTSplash from '../components/CRTSplash.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  isHome?: boolean;
+}
+
+const {
+  title = 'Portafolio Profesional | Full-Stack & Creative Developer',
+  description = 'Portafolio web profesional con experiencias interactivas en 3D y desarrollo full-stack.',
+  isHome = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es" class="light-theme">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- CRT Boot Initializer: Prevents splash screen flash on subsequent visits in the same session -->
+    <script is:inline>
+      if (sessionStorage.getItem('portfolio_crt_booted') === 'true') {
+        document.documentElement.classList.add('crt-booted');
+      }
+    </script>
+
+    <!-- Theme Initializer: Default is LIGHT mode -->
+    <script is:inline>
+      const applyTheme = () => {
+        const theme = localStorage.getItem('portfolio-theme') || 'light';
+        if (theme === 'dark') {
+          document.documentElement.classList.remove('light-theme');
+        } else {
+          document.documentElement.classList.add('light-theme');
+        }
+      };
+      applyTheme();
+      document.addEventListener('astro:after-swap', applyTheme);
+    </script>
+
+    <!-- Astro View Transitions -->
+    <ClientRouter />
+  </head>
+  <body class={`bg-[#0a0a0c] text-zinc-300 antialiased flex flex-col relative font-mono selection:bg-amber-700 selection:text-amber-100 ${
+    isHome ? 'h-screen h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen overflow-x-hidden'
+  }`}>
+    <!-- CRT TV Turn-On Splash Screen (Runs only on initial visit / cache clear) -->
+    <CRTSplash />
+
+    <!-- Persistent Full-Width CRT Warp Plasma Background across all pages -->
+    <div
+      id="crt-warp-bg-layer"
+      transition:persist="crt-warp-bg"
+      style={`view-transition-name: none !important; opacity: ${isHome ? '0.45' : '0.18'};`}
+      class="fixed inset-0 w-screen h-screen pointer-events-none z-0 overflow-hidden transition-opacity duration-500"
+    >
+      <CRTWarp
+        color="#f59e0b"
+        backgroundColor="#07060a"
+        speed={0.4}
+        curvature={0.2}
+        scanlineStrength={0.2}
+        scanlineFrequency={200}
+        waveAmplitude={0.24}
+        waveFrequency={2.4}
+        bloom={1.4}
+        bloomRadius={1}
+        noise={0.04}
+        vignette={0.12}
+        brightness={1.2}
+        pixelation={1}
+        rgbShift={0.012}
+        mouseReact={true}
+        mouseStrength={0.45}
+        dpr={1}
+        fps={60}
+        paused={false}
+        autoTheme={true}
+      />
+    </div>
+
+    <!-- CRT TV Screen & Scanlines Overlay -->
+    <div class="crt-overlay"></div>
+
+    <!-- Persistent Three.js 3D Scene across all pages -->
+    <RustScene />
+
+    <!-- Navigation Header -->
+    <Navbar />
+    
+    <!-- Main Content with Slot -->
+    <div class={`relative z-10 flex flex-col ${
+      isHome 
+        ? 'h-full flex-1 pt-18 sm:pt-20 pb-0 overflow-hidden' 
+        : 'flex-1 pt-24 pb-12'
+    }`}>
+      <slot />
+    </div>
+
+    <!-- Telemetry Footer (only on scrollable content pages; Home has its own docked 100vh footer) -->
+    {!isHome && <Footer />}
+
+    <script>
+      // Ensure home page is strictly 100vh with zero scroll and adjust background opacity
+      function enforcePageScrollPolicy() {
+        const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
+        if (isHomePage) {
+          document.body.classList.add('overflow-hidden', 'h-screen', 'max-h-screen');
+          document.documentElement.classList.add('overflow-hidden');
+        } else {
+          document.body.classList.remove('overflow-hidden', 'h-screen', 'max-h-screen');
+          document.documentElement.classList.remove('overflow-hidden');
+        }
+
+        // Adjust CRT Warp background opacity: atmospheric (0.45) on Home, subtle (0.18) on content pages
+        const bgLayer = document.getElementById('crt-warp-bg-layer');
+        if (bgLayer) {
+          bgLayer.style.opacity = isHomePage ? '0.45' : '0.18';
+        }
+      }
+
+      document.addEventListener('astro:page-load', enforcePageScrollPolicy);
+    </script>
+  </body>
+</html>
