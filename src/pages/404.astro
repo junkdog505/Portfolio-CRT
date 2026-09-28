@@ -1,0 +1,199 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Balatro from '../components/Balatro.astro';
+import GlassSurface from '../components/GlassSurface.astro';
+---
+
+<Layout
+  title="Página no encontrada | 404"
+  description="Error 404: Página no encontrada."
+>
+  <!-- Fuente 8-Bit de alta fidelidad (Silkscreen para textos y Press Start 2P para números gigantes de arcade) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Fondo animado Balatro WebGL Hypno-Shader (En pantalla completa 60/120 FPS nativos) -->
+  <div class="fixed inset-0 z-0 pointer-events-auto">
+    <Balatro
+      isRotate={false}
+      mouseInteraction={true}
+      pixelFilter={745}
+      color1="#DE443B"
+      color2="#006BB4"
+      color3="#162325"
+      contrast={3.5}
+      lighting={0.4}
+      spinAmount={0.25}
+      spinSpeed={7.0}
+    />
+  </div>
+
+  <!-- Contenedor central libre (z-30, sin tarjeta ni contenedor general, textos directamente sobre el shader) -->
+  <main class="relative z-30 w-full min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 select-none text-center">
+    
+    <!-- 1. PRIMERO: Página no encontrada (Mucho más grande, limpio, en fuente 8-bit Silkscreen) -->
+    <h2 class="text-page-title">
+      Página no encontrada
+    </h2>
+
+    <!-- 2. DESPUÉS: 404 (Gigante arcade, de enorme presencia e impacto visual) -->
+    <h1 class="text-404-number">
+      404
+    </h1>
+
+    <!-- 3. Botón de volver al inicio con estilo Glass óptico vistoso y refracción activa -->
+    <GlassSurface
+      as="a"
+      href="/"
+      borderRadius={9999}
+      borderWidth={0.06}
+      distortionScale={-140}
+      saturation={2.0}
+      className="btn-glass-pill group cursor-pointer"
+    >
+      <span class="btn-arrow transition-transform duration-200 group-hover:-translate-x-1.5">←</span>
+      <span>Volver al inicio</span>
+    </GlassSurface>
+
+  </main>
+</Layout>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap');
+
+  /* Reset del contenedor raíz de Layout para centrado absoluto en viewport */
+  :global(#app-content-root) {
+    min-height: 100vh !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  :global(#app-content-root > div) {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 100vh !important;
+    height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Ocultar header y footer en la página 404 */
+  :global(#site-header),
+  :global(footer) {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Ocultar fondo plasma CRT, escena 3D y overlay de scanlines para no ensuciar el shader */
+  :global(#crt-warp-bg-layer),
+  :global(#rust-3d-root),
+  :global(.crt-overlay) {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Fondo limpio y sin texturas de líneas del body global */
+  :global(body) {
+    background: #000000 !important;
+    background-image: none !important;
+  }
+
+  /* 1. Página no encontrada: Mucho más grande, 8-bit legible, en minúsculas naturales */
+  .text-page-title {
+    font-family: 'Silkscreen', 'Press Start 2P', monospace;
+    font-size: clamp(1.6rem, 4.2vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+    margin: 0 0 clamp(1rem, 2.5vw, 2rem) 0;
+    text-align: center;
+    line-height: 1.25;
+    text-shadow: 
+      0 4px 18px rgba(0, 0, 0, 0.95), 
+      0 0 30px rgba(255, 255, 255, 0.35);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* 2. 404: 8-bit gigante, de arcade clásico, masivo y llamativo */
+  .text-404-number {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6.5rem, 22vw, 16.5rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+    margin: 0 0 clamp(2.5rem, 5vw, 4.5rem) 0;
+    text-align: center;
+    text-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.95), 
+      0 0 50px rgba(222, 68, 59, 0.6), 
+      0 0 95px rgba(0, 107, 180, 0.55);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* 3. Botón Vistoso en pastilla de cristal con refracción óptica real */
+  :global(.btn-glass-pill) {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    padding: clamp(0.9rem, 2vw, 1.15rem) clamp(2.2rem, 4vw, 3.2rem) !important;
+    font-family: 'Silkscreen', 'Press Start 2P', monospace !important;
+    font-size: clamp(0.95rem, 1.8vw, 1.2rem) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.07em !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border-radius: 9999px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: none !important;
+    box-shadow: 
+      0 0 2px 1px rgba(255, 255, 255, 0.5) inset,
+      0 0 16px 4px rgba(255, 255, 255, 0.12) inset,
+      0 14px 40px rgba(0, 0, 0, 0.6),
+      0 0 30px rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+  }
+
+  :global(.btn-glass-pill:hover) {
+    background: rgba(255, 255, 255, 0.18) !important;
+    transform: translateY(-3px) scale(1.03) !important;
+    box-shadow: 
+      0 0 3px 1.5px rgba(255, 255, 255, 0.75) inset,
+      0 0 24px 6px rgba(255, 255, 255, 0.22) inset,
+      0 20px 50px rgba(0, 0, 0, 0.7),
+      0 0 40px rgba(0, 107, 180, 0.45) !important;
+  }
+
+  :global(.btn-glass-pill:active) {
+    transform: translateY(1px) scale(0.98) !important;
+    box-shadow: 
+      0 0 2px 1px rgba(255, 255, 255, 0.4) inset,
+      0 6px 20px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .btn-arrow {
+    display: inline-block;
+  }
+</style>
+
+<script>
+  // Pausar el renderizador CRT plasma al entrar en 404 para garantizar 60 FPS en Balatro
+  function optimize404Perf() {
+    const warpEl = document.querySelector('.crt-warp-container');
+    if (warpEl) warpEl.setAttribute('data-paused', '1');
+  }
+
+  document.addEventListener('astro:page-load', optimize404Perf);
+</script>
