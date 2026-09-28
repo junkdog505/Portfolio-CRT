@@ -35,10 +35,47 @@ const {
 
     <!-- CRT Boot Initializer: Prevents splash screen flash on subsequent visits in the same session -->
     <script is:inline>
-      if (sessionStorage.getItem('portfolio_crt_booted') === 'true') {
-        document.documentElement.classList.add('crt-booted');
-      }
+      const checkBoot = () => {
+        if (sessionStorage.getItem('portfolio_crt_booted') === 'true' || sessionStorage.getItem('portfolio_door_opened') === 'true') {
+          document.documentElement.classList.add('crt-booted');
+        }
+      };
+      checkBoot();
+      document.addEventListener('astro:after-swap', checkBoot);
     </script>
+
+    <!-- Critical Zero-Flash Preboot Inline Styles (Guarantees zero content flash before splash) -->
+    <style is:inline id="critical-boot-curtain-style">
+      html:not(.crt-booted) {
+        background-color: #000000 !important;
+      }
+      html:not(.crt-booted) body {
+        background-color: #000000 !important;
+        overflow: hidden !important;
+      }
+      html:not(.crt-booted) #app-content-root {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      #critical-boot-curtain {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        width: 100dvw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background-color: #000000 !important;
+        z-index: 2147483647 !important;
+        pointer-events: none !important;
+        display: block !important;
+      }
+      html.crt-booted #critical-boot-curtain {
+        display: none !important;
+        pointer-events: none !important;
+      }
+    </style>
 
     <!-- Theme Initializer: Default is LIGHT mode -->
     <script is:inline>
@@ -60,8 +97,14 @@ const {
   <body class={`bg-[#0a0a0c] text-zinc-300 antialiased flex flex-col relative font-mono selection:bg-amber-700 selection:text-amber-100 ${
     isHome ? 'h-screen h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen overflow-x-hidden'
   }`}>
-    <!-- CRT TV Turn-On Splash Screen (Runs only on initial visit / cache clear) -->
+    <!-- Instant 0ms Critical Black Curtain (Guarantees zero flash of page content on first visit) -->
+    <div id="critical-boot-curtain" aria-hidden="true"></div>
+
+    <!-- CRT TV Turn-On / Resident Evil 3D Door Splash Screen -->
     <CRTSplash />
+
+    <!-- Application Content Root (Hidden until splash sequence finishes) -->
+    <div id="app-content-root" class="contents">
 
     <!-- Persistent Full-Width CRT Warp Plasma Background across all pages -->
     <div
@@ -115,6 +158,7 @@ const {
 
     <!-- Telemetry Footer (only on scrollable content pages; Home has its own docked 100vh footer) -->
     {!isHome && <Footer />}
+    </div>
 
     <script>
       // Ensure home page is strictly 100vh with zero scroll and adjust background opacity

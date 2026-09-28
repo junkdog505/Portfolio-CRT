@@ -7,7 +7,7 @@
 <div
   id="crt-splash-screen"
   class="fixed inset-0 z-[99999] bg-[#000000] flex items-center justify-center overflow-hidden select-none pointer-events-auto"
-  style="view-transition-name: none !important;"
+  style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; width: 100dvw !important; height: 100vh !important; height: 100dvh !important; background-color: #000000 !important; z-index: 9999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; view-transition-name: none !important;"
   aria-hidden="true"
   role="presentation"
 >
@@ -219,6 +219,16 @@
         isModelLoaded = true;
         startTime = performance.now();
 
+        // Smoothly fade out the 0ms critical curtain as the 3D scene reveals
+        const criticalCurtain = document.getElementById('critical-boot-curtain');
+        if (criticalCurtain) {
+          criticalCurtain.style.transition = 'opacity 0.4s ease-out';
+          criticalCurtain.style.opacity = '0';
+          setTimeout(() => {
+            if (criticalCurtain.parentNode) criticalCurtain.remove();
+          }, 450);
+        }
+
         // Reveal the scene softly out of the opaque curtain ("poco a poco")
         if (fadeCurtain) {
           fadeCurtain.style.opacity = '0';
@@ -320,6 +330,10 @@
       sessionStorage.setItem('portfolio_door_opened', 'true');
       sessionStorage.setItem('portfolio_crt_booted', 'true');
       document.documentElement.classList.add('crt-booted');
+
+      // Ensure critical curtain is cleanly removed
+      const criticalCurtain = document.getElementById('critical-boot-curtain');
+      if (criticalCurtain) criticalCurtain.remove();
 
       // Fluid, graceful dissolve revealing the fully loaded portfolio
       if (splash) {

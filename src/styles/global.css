@@ -706,9 +706,16 @@ html.light-theme #easter-egg-close:hover {
 }
 
 /* CRT Splash Screen: Zero-flash hide when already booted in session */
-html.crt-booted #crt-splash-screen {
+html.crt-booted #crt-splash-screen,
+html.crt-booted #critical-boot-curtain {
   display: none !important;
   pointer-events: none !important;
+}
+
+html.crt-booted #app-content-root {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 
