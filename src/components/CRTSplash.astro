@@ -1,583 +1,362 @@
 ---
-// CRTSplash.astro - Retro CRT TV + Tux Walking & Waving + PS2 Dramatic Boot Zoom
-// Runs on initial session visit. Replay with Ctrl+F5 or cache clear.
+// CRTSplash.astro - Iconic Resident Evil (PS1) 3D Door Opening Loading Splash Screen
+// Uses public/models/psx-door.glb. Pure visual 3D sequence as an atmospheric loading buffer.
+// Runs strictly on initial session visit. Replay with Ctrl+F5 or Ctrl+R.
 ---
 
 <div
   id="crt-splash-screen"
-  class="fixed inset-0 z-[99999] bg-[#020205] flex items-center justify-center overflow-hidden select-none pointer-events-auto"
+  class="fixed inset-0 z-[99999] bg-[#000000] flex items-center justify-center overflow-hidden select-none pointer-events-auto"
   style="view-transition-name: none !important;"
   aria-hidden="true"
   role="presentation"
 >
-  <!-- Atmospheric Dark Room Lighting behind TV -->
-  <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(25,25,35,0.6)_0%,rgba(2,2,5,0.98)_75%)] z-0"></div>
+  <!-- Full-Screen Three.js WebGL Arena: Resident Evil 3D Door & Hallway -->
+  <canvas
+    id="re-door-canvas"
+    class="absolute inset-0 w-full h-full block z-10 cursor-default"
+  ></canvas>
 
-  <!-- PS2 Warp Speed Lines & Chromatic Ambient Aura (Ignites during dramatic zoom) -->
+  <!-- Dramatic Dark Vignette Overlay -->
+  <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.85)_75%,rgba(0,0,0,1)_100%)] z-20"></div>
+
+  <!-- Subtle PS1 Dither & Scanline Texture Filter -->
+  <div class="absolute inset-0 pointer-events-none crt-ps1-scanlines opacity-35 z-20"></div>
+
+  <!-- Atmospheric Opaque Shroud & Threshold Fade Curtain -->
   <div
-    id="ps2-warp-layer"
-    class="absolute inset-0 pointer-events-none opacity-0 z-20 transition-opacity duration-300 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.18)_0%,rgba(147,51,234,0.12)_45%,transparent_75%)]"
-  >
-    <div class="absolute inset-0 ps2-radial-lines opacity-40"></div>
-  </div>
-
-  <!-- Retro CRT TV Silhouette & Assembly Wrapper -->
-  <div
-    id="crt-tv-outer"
-    class="relative z-10 flex flex-col items-center origin-[36%_52%] will-change-transform"
-  >
-    <!-- Twin Telescopic Antenna on Top -->
-    <div class="relative w-44 sm:w-56 h-12 sm:h-16 flex justify-between items-end pointer-events-none -mb-1 z-0 opacity-85">
-      <!-- Left antenna -->
-      <div class="w-1.5 h-16 sm:h-20 bg-gradient-to-t from-zinc-600 via-zinc-400 to-zinc-200 origin-bottom transform -rotate-30 rounded-t-full shadow relative">
-        <div class="w-3 h-3 rounded-full bg-zinc-300 absolute -top-1.5 -left-0.5 shadow"></div>
-      </div>
-      <!-- Center antenna mount & carrying handle -->
-      <div class="flex flex-col items-center">
-        <div class="w-20 h-4 border-2 border-zinc-700 bg-zinc-900/90 rounded-t-lg -mb-0.5"></div>
-        <div class="w-12 h-2.5 bg-zinc-800 rounded-t-sm border-t border-zinc-600"></div>
-      </div>
-      <!-- Right antenna -->
-      <div class="w-1.5 h-16 sm:h-20 bg-gradient-to-t from-zinc-600 via-zinc-400 to-zinc-200 origin-bottom transform rotate-30 rounded-t-full shadow relative">
-        <div class="w-3 h-3 rounded-full bg-zinc-300 absolute -top-1.5 -left-0.5 shadow"></div>
-      </div>
-    </div>
-
-    <!-- TV Chassis Housing -->
-    <div
-      id="crt-tv-chassis"
-      class="relative w-[340px] sm:w-[480px] md:w-[560px] h-[250px] sm:h-[340px] md:h-[390px] bg-gradient-to-b from-[#24242c] via-[#181820] to-[#0f0f14] rounded-3xl p-3.5 sm:p-5 border-4 border-[#33333d] shadow-[0_25px_60px_rgba(0,0,0,0.95),inset_0_2px_4px_rgba(255,255,255,0.12)] flex gap-3 sm:gap-4 items-center z-10"
-    >
-      <!-- Left/Center: The Curved CRT Screen Window -->
-      <div
-        id="crt-screen-frame"
-        class="flex-1 h-full relative rounded-2xl border-4 border-[#09090d] bg-[#030307] overflow-hidden shadow-[inset_0_0_30px_rgba(0,0,0,0.98)] flex items-center justify-center"
-      >
-        <!-- Dark Off-Screen Glass Overlay (Turned OFF silhouette) -->
-        <div
-          id="crt-glass-off"
-          class="absolute inset-0 bg-[#09090e] z-30 transition-opacity duration-200 flex items-center justify-center opacity-100"
-        >
-          <!-- Curved Glass Reflection / Specular Sheen -->
-          <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.08] pointer-events-none"></div>
-          <div class="w-32 h-32 rounded-full bg-white/[0.015] filter blur-xl pointer-events-none"></div>
-        </div>
-
-        <!-- TV Static Noise Canvas (Plays during power-on ignition) -->
-        <canvas
-          id="crt-static-canvas"
-          class="absolute inset-0 w-full h-full object-cover filter contrast-125 brightness-110 z-10 transition-opacity duration-300 opacity-100"
-          style="image-rendering: pixelated;"
-        ></canvas>
-
-        <!-- Tux Inside-Screen Stage (Revealed after static clears) -->
-        <div
-          id="crt-tux-stage"
-          class="absolute inset-0 z-20 flex flex-col justify-end items-center pb-2 sm:pb-3 overflow-hidden opacity-0 transition-opacity duration-200"
-        >
-          <!-- Retro 3D Grid Floor inside TV screen -->
-          <div class="absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-t from-blue-950/60 via-purple-950/30 to-transparent crt-grid-floor"></div>
-
-          <!-- Tux Actor Container (Moves in from left to center) -->
-          <div
-            id="crt-tux-actor"
-            class="relative z-10 flex flex-col items-center select-none"
-            style="transform: translateX(-160px);"
-          >
-            <!-- Pixel Speech Greeting Bubble -->
-            <div
-              id="crt-tux-bubble"
-              class="mb-1 sm:mb-1.5 bg-black/90 border border-amber-400 px-2 sm:px-2.5 py-0.5 rounded shadow-[0_0_10px_rgba(245,158,11,0.6)] text-[10px] sm:text-[11px] font-mono text-amber-400 font-bold crt-text-amber opacity-0 transform scale-75 transition-all duration-200 flex items-center gap-1"
-            >
-              <span>¡HOLA!</span>
-              <span class="animate-bounce">👋</span>
-            </div>
-
-            <!-- Tux 3D Sprite with Waddle & Wave Animation -->
-            <div id="crt-tux-sprite" class="w-20 sm:w-28 md:w-32 h-auto relative">
-              <img
-                src="/tux-nobg.png"
-                alt="Tux Linux 3D"
-                class="w-full h-auto object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.9)]"
-                loading="eager"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Analog CRT Scanlines & Tube Curvature Vignette -->
-        <div class="absolute inset-0 pointer-events-none crt-static-scanlines z-30"></div>
-        <div class="absolute inset-0 pointer-events-none crt-static-vignette z-30"></div>
-
-        <!-- Cathode Ray Ignition Horizontal Beam -->
-        <div
-          id="crt-beam"
-          class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] bg-white pointer-events-none opacity-0 z-40"
-          style="transform: scaleX(0); box-shadow: 0 0 20px #ffffff, 0 0 50px #f59e0b, 0 0 90px #d97706;"
-        ></div>
-      </div>
-
-      <!-- Right Column: Retro TV Controls & Dials -->
-      <div class="w-16 sm:w-24 h-full flex flex-col justify-between py-1.5 sm:py-2.5 border-l border-zinc-800/90 pl-2.5 sm:pl-3 select-none">
-        <!-- Brand Badge -->
-        <div class="text-[8px] sm:text-[9px] font-mono text-zinc-500 uppercase tracking-widest text-center border-b border-zinc-800/80 pb-1">
-          ANARA-88
-        </div>
-
-        <!-- Dials & Speaker Vents -->
-        <div class="flex flex-col items-center gap-2.5 sm:gap-3.5 my-auto">
-          <!-- VHF Channel Dial -->
-          <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-zinc-700 via-zinc-800 to-zinc-950 border-2 border-zinc-600 shadow-md flex items-center justify-center relative">
-            <div class="w-1 h-3 sm:h-4 bg-amber-500 rounded-sm transform -rotate-45 shadow"></div>
-          </div>
-
-          <!-- UHF Tuning Dial -->
-          <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-zinc-700 via-zinc-800 to-zinc-950 border-2 border-zinc-600 shadow-md flex items-center justify-center relative">
-            <div class="w-1 h-2.5 sm:h-3.5 bg-zinc-300 rounded-sm transform rotate-45 shadow"></div>
-          </div>
-
-          <!-- Speaker Grille Slots -->
-          <div class="w-full flex flex-col gap-1 py-1 px-1">
-            <div class="h-0.5 bg-black/90 rounded-full"></div>
-            <div class="h-0.5 bg-black/90 rounded-full"></div>
-            <div class="h-0.5 bg-black/90 rounded-full"></div>
-            <div class="h-0.5 bg-black/90 rounded-full"></div>
-          </div>
-        </div>
-
-        <!-- Power Indicator & Switch -->
-        <div class="flex items-center justify-between border-t border-zinc-800/80 pt-1.5">
-          <div class="flex items-center gap-1.5">
-            <span
-              id="crt-power-led"
-              class="w-2 h-2 rounded-full bg-red-950 border border-red-900 transition-all duration-200"
-            ></span>
-            <span class="text-[7px] sm:text-[8px] font-mono text-zinc-500">PWR</span>
-          </div>
-          <div class="w-3.5 h-3.5 bg-zinc-800 border border-zinc-600 rounded-xs shadow-inner"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TV Stand Feet -->
-    <div class="w-[72%] flex justify-between px-6 pointer-events-none -mt-1 z-0">
-      <div class="w-8 sm:w-10 h-3 bg-zinc-800 rounded-b-md shadow-lg border-b-2 border-zinc-950"></div>
-      <div class="w-8 sm:w-10 h-3 bg-zinc-800 rounded-b-md shadow-lg border-b-2 border-zinc-950"></div>
-    </div>
-  </div>
-
-  <!-- Screen Flash Burst (on vertical beam opening and PS2 zoom transition) -->
-  <div id="crt-flash" class="absolute inset-0 bg-white pointer-events-none opacity-0 z-50 transition-opacity duration-150"></div>
-
-  <!-- Retro Arcade Style "LOADING" in Bottom Right -->
-  <div
-    id="crt-loading-badge"
-    class="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-40 flex items-center gap-2 border-2 border-amber-500/80 bg-black/90 px-3 py-1.5 shadow-[0_0_15px_rgba(245,158,11,0.5)] font-mono text-xs select-none"
-  >
-    <span class="inline-block w-2.5 h-2.5 bg-amber-400 animate-pulse"></span>
-    <span class="text-amber-400 font-black tracking-widest crt-text-amber text-[11px] sm:text-xs">
-      LOADING<span id="crt-dots" class="inline-block w-5 text-left">...</span>
-    </span>
-  </div>
+    id="re-fade-curtain"
+    class="fixed inset-0 bg-[#000000] pointer-events-none opacity-100 z-30 transition-opacity duration-800 ease-out"
+  ></div>
 </div>
 
 <style>
-  /* Scanlines for authentic TV look */
-  .crt-static-scanlines {
+  .crt-ps1-scanlines {
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
     background-size: 100% 3px;
-    opacity: 0.8;
-  }
-
-  /* Deep CRT monitor bezel vignette */
-  .crt-static-vignette {
-    background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.65) 75%, rgba(0, 0, 0, 0.95) 100%);
-  }
-
-  /* Retro perspective grid floor inside the TV screen */
-  .crt-grid-floor {
-    background-image: 
-      linear-gradient(rgba(59, 130, 246, 0.25) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(59, 130, 246, 0.25) 1px, transparent 1px);
-    background-size: 16px 16px;
-    transform: perspective(100px) rotateX(45deg);
-    transform-origin: bottom;
-  }
-
-  /* PS2 Speed lines during dramatic zoom */
-  .ps2-radial-lines {
-    background: repeating-radial-gradient(circle at center, transparent 0, transparent 20px, rgba(255, 255, 255, 0.08) 21px, transparent 24px);
-  }
-
-  /* Tux Walking / Waddling Animation */
-  @keyframes tuxWaddle {
-    0%, 100% {
-      transform: translateY(0px) rotate(-8deg);
-    }
-    50% {
-      transform: translateY(-5px) rotate(8deg);
-    }
-  }
-
-  .tux-waddling {
-    animation: tuxWaddle 0.22s infinite ease-in-out;
-  }
-
-  /* Tux Greeting Wave Animation */
-  @keyframes tuxWave {
-    0%, 100% {
-      transform: translateY(0px) rotate(0deg) scale(1);
-    }
-    20% {
-      transform: translateY(-3px) rotate(-14deg) scale(1.08);
-    }
-    40% {
-      transform: translateY(0px) rotate(12deg) scale(1.08);
-    }
-    60% {
-      transform: translateY(-3px) rotate(-10deg) scale(1.08);
-    }
-    80% {
-      transform: translateY(0px) rotate(8deg) scale(1.04);
-    }
-  }
-
-  .tux-waving {
-    animation: tuxWave 0.55s ease-in-out;
   }
 </style>
 
 <script>
-  function runTuxPS2BootSplash() {
-    // Check if already booted in this session
-    if (sessionStorage.getItem('portfolio_crt_booted') === 'true') {
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+  function runResidentEvilDoorSplash() {
+    // Check if already opened in this session
+    if (sessionStorage.getItem('portfolio_door_opened') === 'true' || sessionStorage.getItem('portfolio_crt_booted') === 'true') {
       const splash = document.getElementById('crt-splash-screen');
       if (splash) splash.remove();
       return;
     }
 
     const splash = document.getElementById('crt-splash-screen');
-    const tvOuter = document.getElementById('crt-tv-outer');
-    const glassOff = document.getElementById('crt-glass-off');
-    const powerLed = document.getElementById('crt-power-led');
-    const canvas = document.getElementById('crt-static-canvas') as HTMLCanvasElement | null;
-    const beam = document.getElementById('crt-beam');
-    const flash = document.getElementById('crt-flash');
-    const dots = document.getElementById('crt-dots');
-    const warpLayer = document.getElementById('ps2-warp-layer');
-    const tuxStage = document.getElementById('crt-tux-stage');
-    const tuxActor = document.getElementById('crt-tux-actor');
-    const tuxSprite = document.getElementById('crt-tux-sprite');
-    const tuxBubble = document.getElementById('crt-tux-bubble');
+    const canvas = document.getElementById('re-door-canvas') as HTMLCanvasElement | null;
+    const fadeCurtain = document.getElementById('re-fade-curtain');
 
-    if (!splash || !tvOuter || !canvas || !beam || !glassOff || !tuxStage || !tuxActor || !tuxSprite) return;
+    if (!splash || !canvas) return;
 
     let isDone = false;
     let animId: number | null = null;
-    let audioCtx: AudioContext | null = null;
+    let startTime = 0;
 
-    function getAudioContext(): AudioContext | null {
-      try {
-        if (!audioCtx) {
-          const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-          if (AudioCtxClass) {
-            audioCtx = new AudioCtxClass();
-          }
-        }
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume().catch(() => {});
-        }
-        return audioCtx;
-      } catch (_) {
-        return null;
-      }
+    // =========================================================================
+    // Three.js Scene: Authentic Spencer Mansion Hallway & Full Door Framing
+    // =========================================================================
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+    // Subtle PS1 hallway depth fog
+    scene.fog = new THREE.FogExp2(0x060406, 0.045);
+
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 50);
+
+    // Calculate optimal camera distance so the ENTIRE door and frame are 100% visible
+    // Doorframe dimensions: Width = 0.90m, Height = 1.94m
+    function getOptimalCameraZ(aspect: number): number {
+      const fov = 40;
+      const halfFovRad = (fov * Math.PI) / 360;
+      const halfFovTan = Math.tan(halfFovRad);
+      // Target: 2.50m height and 1.40m width ensures side walls and full door width fit
+      const zByHeight = (2.50 / 2) / halfFovTan;
+      const zByWidth = (1.40 / 2) / (halfFovTan * aspect);
+      return Math.max(zByHeight, zByWidth, 3.4);
     }
 
-    // 1. Setup Canvas TV Static
-    const ctx = canvas.getContext('2d');
-    const sw = 180;
-    const sh = 120;
-    canvas.width = sw;
-    canvas.height = sh;
+    let startZ = getOptimalCameraZ(width / height);
+    camera.position.set(0, 0, startZ);
+    camera.lookAt(0, 0, 0);
 
-    const imgData = ctx ? ctx.createImageData(sw, sh) : null;
-    const buf32 = imgData ? new Uint32Array(imgData.data.buffer) : null;
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false, // PS1 authentic retro look
+      powerPreference: 'high-performance',
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    function renderNoise() {
-      if (isDone || !ctx || !imgData || !buf32) return;
-      const len = buf32.length;
-      for (let i = 0; i < len; i++) {
-        const gray = Math.random() > 0.5 ? ((Math.random() * 210 + 45) | 0) : ((Math.random() * 80) | 0);
-        buf32[i] = (255 << 24) | (gray << 16) | (gray << 8) | gray;
-      }
-      ctx.putImageData(imgData, 0, 0);
-      animId = requestAnimationFrame(renderNoise);
-    }
-    renderNoise();
+    // Hallway Lighting: Flashlight Spotlight + Ambient Fill
+    const ambientLight = new THREE.AmbientLight(0x1a1518, 0.55);
+    scene.add(ambientLight);
 
-    // 2. Audio Effects: Power On Relay Click
-    function playPowerOnClick() {
-      const actx = getAudioContext();
-      if (!actx) return;
-      try {
-        const now = actx.currentTime;
-        const thump = actx.createOscillator();
-        const thumpGain = actx.createGain();
-        thump.type = 'triangle';
-        thump.frequency.setValueAtTime(140, now);
-        thump.frequency.exponentialRampToValueAtTime(30, now + 0.05);
-        thumpGain.gain.setValueAtTime(0.35, now);
-        thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-        thump.connect(thumpGain);
-        thumpGain.connect(actx.destination);
-        thump.start(now);
-        thump.stop(now + 0.06);
-      } catch (_) {}
-    }
+    const fillLight = new THREE.PointLight(0x282025, 0.6, 9);
+    fillLight.position.set(0, 0.6, 3.0);
+    scene.add(fillLight);
 
-    // Audio: Tux Greeting Chirp
-    function playTuxHelloChirp() {
-      const actx = getAudioContext();
-      if (!actx) return;
-      try {
-        const now = actx.currentTime;
-        [587.33, 880].forEach((freq, idx) => {
-          const osc = actx.createOscillator();
-          const gain = actx.createGain();
-          const t = now + idx * 0.09;
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.12, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-          osc.connect(gain);
-          gain.connect(actx.destination);
-          osc.start(t);
-          osc.stop(t + 0.2);
+    // Focused flashlight spotlight pointed at the door lock and center panel
+    const spotLight = new THREE.SpotLight(0xffeed6, 0, 15, Math.PI / 4.2, 0.72, 1.2);
+    spotLight.position.set(0.05, 0.1, 3.6);
+    scene.add(spotLight);
+
+    const spotTarget = new THREE.Object3D();
+    spotTarget.position.set(-0.1, 0.0, 0.0);
+    scene.add(spotTarget);
+    spotLight.target = spotTarget;
+
+    // Hallway Environment Group (Floor, Walls & Doorway)
+    const hallwayGroup = new THREE.Group();
+    scene.add(hallwayGroup);
+
+    // Dark Hallway Floor at y = -0.97 (level with doorframe threshold)
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0x100e0d,
+      roughness: 0.85,
+      metalness: 0.08,
+    });
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set(0, -0.97, 0);
+    hallwayGroup.add(floor);
+
+    // Mansion Hallway Walls around the doorframe
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0x141113,
+      roughness: 0.92,
+      metalness: 0.05,
+    });
+
+    // Left wall
+    const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(8, 5), wallMat);
+    leftWall.position.set(-4.45, 0.5, -0.01);
+    hallwayGroup.add(leftWall);
+
+    // Right wall
+    const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(8, 5), wallMat);
+    rightWall.position.set(4.45, 0.5, -0.01);
+    hallwayGroup.add(rightWall);
+
+    // Top header wall
+    const topWall = new THREE.Mesh(new THREE.PlaneGeometry(0.90, 2.5), wallMat);
+    topWall.position.set(0, 2.22, -0.01);
+    hallwayGroup.add(topWall);
+
+    // Baseboards along floor left and right
+    const trimMat = new THREE.MeshStandardMaterial({
+      color: 0x1c1514,
+      roughness: 0.75,
+      metalness: 0.1,
+    });
+    const leftTrim = new THREE.Mesh(new THREE.BoxGeometry(8, 0.14, 0.04), trimMat);
+    leftTrim.position.set(-4.45, -0.90, 0.02);
+    hallwayGroup.add(leftTrim);
+
+    const rightTrim = new THREE.Mesh(new THREE.BoxGeometry(8, 0.14, 0.04), trimMat);
+    rightTrim.position.set(4.45, -0.90, 0.02);
+    hallwayGroup.add(rightTrim);
+
+    // Dark interior void backdrop behind the door opening
+    const backVoidMat = new THREE.MeshBasicMaterial({ color: 0x020203 });
+    const backVoid = new THREE.Mesh(new THREE.PlaneGeometry(12, 8), backVoidMat);
+    backVoid.position.set(0, 0.5, -3.5);
+    hallwayGroup.add(backVoid);
+
+    // Door 3D Group
+    const doorGroup = new THREE.Group();
+    scene.add(doorGroup);
+
+    let doorNode: THREE.Object3D | null = null;
+    let handleNode: THREE.Object3D | null = null;
+    let initialRotZ = 0;
+    let isModelLoaded = false;
+
+    // Load psx-door.glb
+    const loader = new GLTFLoader();
+    loader.load(
+      '/models/psx-door.glb',
+      (gltf) => {
+        const fullScene = gltf.scene;
+
+        // Hide all extra doors and doorframes
+        const extraNames = [
+          'Worn_Door_001', 'Worn_Door_002', 'Worn_Door_004', 'Door_Handle009',
+          'Worn_Door_005', 'Door_Handle008', 'Worn_Doorframe_004', 'Worn_Doorframe_005'
+        ];
+        extraNames.forEach((n) => {
+          const obj = fullScene.getObjectByName(n);
+          if (obj) obj.visible = false;
         });
-      } catch (_) {}
-    }
 
-    // Audio: PS2 Iconic Atmospheric Resonant Boot Drone & Whoosh
-    function playPS2BootDrone() {
-      const actx = getAudioContext();
-      if (!actx) return;
-      try {
-        const now = actx.currentTime;
+        // Isolate Spencer Mansion dark wood door (Door 6 & Frame 6)
+        const frame = fullScene.getObjectByName('Worn_Doorframe_006');
+        doorNode = fullScene.getObjectByName('Worn_Door_006') || null;
+        handleNode = fullScene.getObjectByName('Door_Handle005') || null;
 
-        // Sub bass drone
-        const sub = actx.createOscillator();
-        const subGain = actx.createGain();
-        sub.type = 'sine';
-        sub.frequency.setValueAtTime(55, now); // A1
-        sub.frequency.exponentialRampToValueAtTime(32, now + 0.9);
-        subGain.gain.setValueAtTime(0.001, now);
-        subGain.gain.linearRampToValueAtTime(0.35, now + 0.25);
-        subGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
-        sub.connect(subGain);
-        subGain.connect(actx.destination);
-        sub.start(now);
-        sub.stop(now + 0.95);
-
-        // Resonant chord swell (D2, A2, D3)
-        [73.42, 110.0, 146.83, 220.0].forEach((freq) => {
-          const osc = actx.createOscillator();
-          const gain = actx.createGain();
-          const filter = actx.createBiquadFilter();
-
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(freq, now);
-
-          filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(160, now);
-          filter.frequency.exponentialRampToValueAtTime(3200, now + 0.6);
-          filter.Q.value = 4.0;
-
-          gain.gain.setValueAtTime(0.001, now);
-          gain.gain.linearRampToValueAtTime(0.08, now + 0.35);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-
-          osc.connect(filter);
-          filter.connect(gain);
-          gain.connect(actx.destination);
-
-          osc.start(now);
-          osc.stop(now + 0.95);
-        });
-
-        // Air/Warp whoosh noise burst
-        const bufSize = Math.floor(actx.sampleRate * 0.9);
-        const noiseBuf = actx.createBuffer(1, bufSize, actx.sampleRate);
-        const chData = noiseBuf.getChannelData(0);
-        for (let i = 0; i < bufSize; i++) {
-          chData[i] = (Math.random() * 2 - 1) * 0.25;
+        if (doorNode) {
+          initialRotZ = doorNode.rotation.z;
         }
-        const noise = actx.createBufferSource();
-        noise.buffer = noiseBuf;
 
-        const noiseFilter = actx.createBiquadFilter();
-        noiseFilter.type = 'bandpass';
-        noiseFilter.frequency.setValueAtTime(400, now);
-        noiseFilter.frequency.exponentialRampToValueAtTime(2600, now + 0.5);
-        noiseFilter.Q.value = 1.2;
+        // Center doorway exactly at (0, 0, 0)
+        if (frame) {
+          frame.updateMatrixWorld(true);
+          const frameBox = new THREE.Box3().setFromObject(frame);
+          const center = new THREE.Vector3();
+          frameBox.getCenter(center);
+          doorGroup.position.set(-center.x, -center.y, -center.z);
+        }
 
-        const noiseGain = actx.createGain();
-        noiseGain.gain.setValueAtTime(0.001, now);
-        noiseGain.gain.linearRampToValueAtTime(0.25, now + 0.45);
-        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+        doorGroup.add(fullScene);
+        isModelLoaded = true;
+        startTime = performance.now();
 
-        noise.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        noiseGain.connect(actx.destination);
-        noise.start(now);
-        noise.stop(now + 0.95);
-      } catch (_) {}
+        // Reveal the scene softly out of the opaque curtain ("poco a poco")
+        if (fadeCurtain) {
+          fadeCurtain.style.opacity = '0';
+        }
+      },
+      undefined,
+      (err) => {
+        console.warn('Door model loading warning:', err);
+      }
+    );
+
+    // =========================================================================
+    // Master Animation Timeline (Resident Evil PS1 Loading Buffer)
+    // - Total buffer: ~3.8s animation + ~0.5s fluid cross-fade = ~4.3s
+    // - 0.0s - 0.85s: Soft fade-in from darkness ("poco a poco"), flashlight warm-up
+    // - 0.85s - 1.20s: Lock clicks, handle depresses down and springs back
+    // - 1.20s - 2.95s: Wooden door creaks open inward smoothly
+    // - 1.80s - 3.40s: Camera glides forward through the open doorway
+    // - 2.90s - 3.65s: Camera crosses threshold into dark interior void
+    // - 3.70s - 4.30s: Smooth fluid cross-fade into fully loaded portfolio
+    // =========================================================================
+    function renderScene(time: number) {
+      if (isDone) return;
+
+      if (isModelLoaded && startTime > 0) {
+        const elapsed = (time - startTime) / 1000;
+
+        // Flashlight warm-up from 0.0s to 0.85s
+        if (elapsed < 0.85) {
+          spotLight.intensity = Math.min((elapsed / 0.85) * 5.6, 5.6);
+        } else {
+          // Subtle natural flashlight breathing
+          spotLight.intensity = 5.6 + Math.sin(elapsed * 4.0) * 0.15;
+        }
+
+        // Camera handheld breathing before forward push
+        if (elapsed < 1.80) {
+          camera.position.x = Math.sin(elapsed * 1.6) * 0.012;
+          camera.position.y = Math.cos(elapsed * 1.4) * 0.008;
+        }
+
+        // Step 1: Door handle depresses on latch click (0.85s to 1.20s)
+        if (elapsed >= 0.85 && elapsed < 1.20 && handleNode) {
+          const p = (elapsed - 0.85) / 0.35;
+          const jiggle = Math.sin(p * Math.PI) * 0.22;
+          handleNode.rotation.y = jiggle;
+        }
+
+        // Step 2: Wooden Door creaks open inward (1.20s to 2.95s)
+        if (elapsed >= 1.20 && elapsed < 2.95 && doorNode) {
+          const openProgress = Math.min((elapsed - 1.20) / 1.75, 1.0);
+          // Cubic ease-in-out swing
+          const easeSwing = openProgress < 0.5
+            ? 4 * openProgress * openProgress * openProgress
+            : 1 - Math.pow(-2 * openProgress + 2, 3) / 2;
+
+          // Swing door open inward by ~83 degrees (-1.45 radians)
+          doorNode.rotation.z = initialRotZ - easeSwing * 1.45;
+        }
+
+        // Step 3: Camera moves forward through the open doorway (1.80s to 3.40s)
+        if (elapsed >= 1.80) {
+          const camProgress = Math.min((elapsed - 1.80) / 1.60, 1.0);
+          const easeCam = camProgress < 0.5
+            ? 2 * camProgress * camProgress
+            : 1 - Math.pow(-2 * camProgress + 2, 2) / 2;
+
+          // Glides from startZ down to -0.40m (right through the open threshold)
+          camera.position.z = startZ - easeCam * (startZ + 0.40);
+          camera.position.x = Math.sin(camProgress * Math.PI) * 0.03;
+          camera.position.y = -Math.sin(camProgress * Math.PI) * 0.02;
+        }
+
+        // Step 4: Soft opaque dissolve as camera crosses the threshold (2.90s to 3.65s)
+        if (elapsed >= 2.90 && fadeCurtain) {
+          fadeCurtain.style.opacity = '1';
+        }
+
+        // Step 5: Finish sequence at 3.75s and smoothly reveal the loaded portfolio
+        if (elapsed >= 3.75) {
+          finish();
+          return;
+        }
+      }
+
+      renderer.render(scene, camera);
+      animId = requestAnimationFrame(renderScene);
     }
 
-    // Blinking dots animation
-    let dotCount = 0;
-    const dotInterval = setInterval(() => {
-      dotCount = (dotCount + 1) % 4;
-      if (dots) dots.textContent = '.'.repeat(dotCount);
-    }, 180);
+    // Start 3D Loop
+    animId = requestAnimationFrame(renderScene);
 
     function finish() {
       if (isDone) return;
       isDone = true;
-      clearInterval(dotInterval);
       if (animId) cancelAnimationFrame(animId);
 
+      // Save session storage flags so it never re-runs in this session
+      sessionStorage.setItem('portfolio_door_opened', 'true');
       sessionStorage.setItem('portfolio_crt_booted', 'true');
       document.documentElement.classList.add('crt-booted');
 
-      if (splash && splash.parentNode) {
-        splash.remove();
+      // Fluid, graceful dissolve revealing the fully loaded portfolio
+      if (splash) {
+        splash.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        splash.style.opacity = '0';
+        setTimeout(() => {
+          if (splash.parentNode) splash.remove();
+        }, 620);
       }
     }
 
-    // Fast dismiss on click or key
-    splash.addEventListener('click', finish);
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === ' ' || e.key === 'Escape' || e.key === 'Enter') finish();
-    };
-    window.addEventListener('keydown', onKey);
-
-    // =========================================================================
-    // Master Animation Timeline
-    // 0ms - 220ms: TV silhouette is OFF
-    // 220ms: TV clicks ON, beam flashes
-    // 320ms: Static clears, Tux stage is revealed
-    // 450ms - 1750ms: Tux waddles from left to center
-    // 1750ms - 2450ms: Tux waves hello (greeting bubble pops)
-    // 2450ms - 3350ms: DRAMATIC PS2 BOOT ZOOM!
-    // 3400ms: Reveal Webpage
-    // =========================================================================
-
-    // Step 1: Power ON at 220ms
-    setTimeout(() => {
-      if (isDone) return;
-      playPowerOnClick();
-
-      // Power LED turns green
-      if (powerLed) {
-        powerLed.className = 'w-2 h-2 rounded-full bg-emerald-400 border border-emerald-300 shadow-[0_0_8px_#34d399] transition-all duration-200';
-      }
-
-      // Beam flashes
-      beam.style.transition = 'transform 0.08s ease-out, opacity 0.06s ease-out';
-      beam.style.opacity = '1';
-      beam.style.transform = 'scaleX(1)';
-    }, 220);
-
-    // Step 2: Screen glass turns ON with static at 300ms
-    setTimeout(() => {
-      if (isDone) return;
-      glassOff.style.opacity = '0';
-
-      if (flash) {
-        flash.style.opacity = '0.5';
-        setTimeout(() => { if (flash) flash.style.opacity = '0'; }, 70);
-      }
-
-      beam.style.transition = 'opacity 0.08s ease-out';
-      beam.style.opacity = '0';
-    }, 300);
-
-    // Step 3: Tux stage appears and Tux starts waddling in at 480ms
-    setTimeout(() => {
-      if (isDone) return;
-
-      // Fade out static snow, reveal Tux stage
-      canvas.style.opacity = '0.12'; // subtle background phosphor static
-      tuxStage.style.opacity = '1';
-
-      // Start waddling walk animation
-      tuxSprite.classList.add('tux-waddling');
-
-      // Move Tux from left to center over 1.25s
-      tuxActor.style.transition = 'transform 1.25s cubic-bezier(0.25, 1, 0.5, 1)';
-      tuxActor.style.transform = 'translateX(0px)';
-    }, 480);
-
-    // Step 4: Tux reaches center and waves hello at 1780ms
-    setTimeout(() => {
-      if (isDone) return;
-
-      // Stop waddling, start waving
-      tuxSprite.classList.remove('tux-waddling');
-      tuxSprite.classList.add('tux-waving');
-
-      // Pop speech bubble
-      if (tuxBubble) {
-        tuxBubble.style.opacity = '1';
-        tuxBubble.style.transform = 'scale(1)';
-      }
-
-      playTuxHelloChirp();
-    }, 1780);
-
-    // Step 5: DRAMATIC PS2 GAME BOOT ZOOM at 2480ms!
-    setTimeout(() => {
-      if (isDone) return;
-
-      playPS2BootDrone();
-
-      // Show PS2 speed lines and atmospheric aura
-      if (warpLayer) {
-        warpLayer.style.opacity = '1';
-      }
-
-      // Hide speech bubble cleanly
-      if (tuxBubble) {
-        tuxBubble.style.opacity = '0';
-      }
-
-      // Cinematic exponential camera plunge: scales 28x straight into Tux and the TV screen
-      tvOuter.style.transition = 'transform 0.88s cubic-bezier(0.7, 0, 0.84, 0.15), opacity 0.78s ease-in';
-      tvOuter.style.transform = 'scale(28)';
-      tvOuter.style.opacity = '0';
-
-      splash.style.transition = 'opacity 0.82s cubic-bezier(0.7, 0, 0.84, 0.15)';
-      splash.style.opacity = '0';
-    }, 2480);
-
-    // Step 6: Complete and Reveal Site at 3400ms
-    setTimeout(() => {
-      finish();
-    }, 3400);
-
-    // Hard refresh interceptor (Ctrl+F5 or Ctrl+Shift+R or Ctrl+R)
+    // Developer / testing hard refresh interceptor (Ctrl+F5 or Ctrl+R) to allow replay
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'F5' || e.key === 'r' || e.key === 'R')) {
+        sessionStorage.removeItem('portfolio_door_opened');
         sessionStorage.removeItem('portfolio_crt_booted');
       }
     });
+
+    // Window Resize Handler (Recalculates optimal distance so door is never cropped)
+    const onResize = () => {
+      if (isDone) return;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      startZ = getOptimalCameraZ(width / height);
+      renderer.setSize(width, height);
+    };
+    window.addEventListener('resize', onResize);
   }
 
   // Run on initial load
-  runTuxPS2BootSplash();
+  runResidentEvilDoorSplash();
 
   document.addEventListener('astro:page-load', () => {
-    if (sessionStorage.getItem('portfolio_crt_booted') === 'true') {
+    if (sessionStorage.getItem('portfolio_door_opened') === 'true' || sessionStorage.getItem('portfolio_crt_booted') === 'true') {
       const splash = document.getElementById('crt-splash-screen');
       if (splash) splash.remove();
     }
