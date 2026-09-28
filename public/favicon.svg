@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <!-- Retro CRT Terminal Rounded Plate -->
-  <rect width="64" height="64" rx="14" fill="#09090d" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.45"/>
-  
-  <!-- Subtle CRT scanline overlay -->
-  <line x1="4" y1="16" x2="60" y2="16" stroke="#f59e0b" stroke-width="0.7" stroke-opacity="0.12"/>
-  <line x1="4" y1="32" x2="60" y2="32" stroke="#f59e0b" stroke-width="0.7" stroke-opacity="0.12"/>
-  <line x1="4" y1="48" x2="60" y2="48" stroke="#f59e0b" stroke-width="0.7" stroke-opacity="0.12"/>
-
-  <!-- Centered Phosphor Code Logo { ; } -->
+  <!-- Phosphor Code Logo { ; } with 100% Transparent Background -->
   <g transform="translate(32, 32) scale(1.18) translate(-26, -13)">
     <!-- Left Curly Brace { -->
     <path

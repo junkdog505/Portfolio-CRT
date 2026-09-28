@@ -330,9 +330,9 @@ const techStack = [
       const card = document.getElementById('easter-egg-card');
       const closeBtn = document.getElementById('easter-egg-close');
       const timerText = document.getElementById('easter-egg-timer-text');
-      const laptopSlot = document.querySelector('[data-rust-slot="laptop"]');
+      const laptopSlot = document.querySelector('[data-rust-slot="laptop"]') as HTMLElement | null;
       const openBtn = document.getElementById('open-easter-egg-btn');
-      const laptopCard = document.querySelector('#scene-anchor')?.closest('.tech-card');
+      const laptopCard = document.querySelector('#scene-anchor')?.closest('.tech-card') as HTMLElement | null;
 
       if (!modal || !card) return;
 
@@ -673,9 +673,9 @@ const techStack = [
         openBtn.addEventListener('click', onOpenBtnClick);
       }
 
-      const onCardClick = (e: MouseEvent) => {
-        const target = e.target as HTMLElement;
-        if (target.tagName !== 'A' && target.tagName !== 'BUTTON' && !target.closest('button')) {
+      const onCardClick = (e: Event) => {
+        const target = e.target as HTMLElement | null;
+        if (target && target.tagName !== 'A' && target.tagName !== 'BUTTON' && !target.closest('button')) {
           openEasterEgg();
         }
       };
