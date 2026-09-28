@@ -21,7 +21,7 @@ interface Props {
   fps?: number;
   paused?: boolean;
   className?: string;
-  autoTheme?: boolean;
+  seed?: number;
 }
 
 const {
@@ -46,7 +46,7 @@ const {
   fps = 60,
   paused = false,
   className = '',
-  autoTheme = true,
+  seed,
 } = Astro.props;
 ---
 
@@ -72,7 +72,7 @@ const {
   data-dpr={dpr}
   data-fps={fps}
   data-paused={paused ? '1' : '0'}
-  data-auto-theme={autoTheme ? '1' : '0'}
+  data-seed={seed !== undefined ? seed : ''}
 >
 </div>
 
@@ -94,6 +94,7 @@ precision highp float;
 varying vec2 vUv;
 uniform vec2 uResolution;
 uniform float uTime;
+uniform float uSeed;
 uniform vec3 uColor;
 uniform vec3 uBackgroundColor;
 uniform float uCurvature;
@@ -111,7 +112,6 @@ uniform float uRgbShift;
 uniform vec2 uPointer;
 uniform float uMouseStrength;
 uniform float uMouseReact;
-uniform float uIsLight;
 
 float hash21(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
@@ -141,16 +141,16 @@ float referencePlasma(vec2 uv, float t) {
 
   float amplitude = uWaveAmplitude / 0.28;
   float field = 0.0;
-  field += 0.7 * sin(0.5 * uv.x + t / 5.0);
-  field += 3.0 * sin(1.6 * uv.y + t / 5.0);
-  field += sin(10.0 * (uv.y * sin(t / 2.0) + uv.x * cos(t / 5.0)) + t / 2.0);
+  field += 0.7 * sin(0.5 * uv.x + t / 5.0 + uSeed * 0.17);
+  field += 3.0 * sin(1.6 * uv.y + t / 5.0 + uSeed * 0.31);
+  field += sin(10.0 * (uv.y * sin(t / 2.0 + uSeed * 0.09) + uv.x * cos(t / 5.0 + uSeed * 0.13)) + t / 2.0);
 
-  float cx = uv.x + 0.5 * sin(t / 2.0);
-  float cy = uv.y + 0.5 * cos(t / 4.0);
-  field += 0.4 * sin(sqrt(100.0 * cx * cx + 100.0 * cy * cy + 1.0) + t);
-  field += 0.9 * sin(sqrt(75.0 * cx * cx + 25.0 * cy * cy + 1.0) + t);
-  field -= 1.4 * sin(sqrt(256.0 * cx * cx + 25.0 * cy * cy + 1.0) + t);
-  field += 0.3 * sin(0.5 * uv.y + uv.x + sin(t));
+  float cx = uv.x + 0.5 * sin(t / 2.0 + uSeed * 0.23);
+  float cy = uv.y + 0.5 * cos(t / 4.0 + uSeed * 0.41);
+  field += 0.4 * sin(sqrt(100.0 * cx * cx + 100.0 * cy * cy + 1.0) + t + uSeed);
+  field += 0.9 * sin(sqrt(75.0 * cx * cx + 25.0 * cy * cy + 1.0) + t + uSeed * 0.5);
+  field -= 1.4 * sin(sqrt(256.0 * cx * cx + 25.0 * cy * cy + 1.0) + t + uSeed * 0.75);
+  field += 0.3 * sin(0.5 * uv.y + uv.x + sin(t + uSeed * 0.5));
 
   return scanline * floor(3.0 * (0.5 + 0.499 * sin(field * amplitude))) / 3.0;
 }
@@ -196,35 +196,17 @@ void main() {
   // Subtle analog grain
   float grain = hash21(gl_FragCoord.xy + vec2(fract(uTime) * 173.0));
 
-  vec3 color;
+  // Authentic Glowing Phosphor CRT Monitor
+  float redSignal = referencePlasma(curvedUv + vec2(uRgbShift, 0.0), uTime);
+  float blueSignal = referencePlasma(curvedUv - vec2(uRgbShift, 0.0), uTime);
+  vec3 channelSignal = vec3(redSignal, signal, blueSignal);
 
-  if (uIsLight > 0.5) {
-    // =========================================================================
-    // LIGHT MODE: Crisp Technical Laboratory Blueprint (High contrast & clean)
-    // Avoid chromatic color corruptions, render as delicate warm-amber contours
-    // =========================================================================
-    float pat = clamp(signal * 0.7 + glow * 0.35, 0.0, 1.0);
-    // Darker amber / warm slate ink on clean background
-    vec3 inkColor = mix(uColor, vec3(0.25, 0.3, 0.4), 0.2);
-    color = mix(uBackgroundColor, inkColor, pat * 0.28 * edgeFade);
-    color = mix(color, color * scanline, uScanlineStrength * 0.4);
-    // Very gentle micro-texture (no dirty blotches)
-    color += (grain - 0.5) * (uNoise * 0.2);
-  } else {
-    // =========================================================================
-    // DARK MODE: Authentic Glowing Phosphor CRT Monitor
-    // =========================================================================
-    float redSignal = referencePlasma(curvedUv + vec2(uRgbShift, 0.0), uTime);
-    float blueSignal = referencePlasma(curvedUv - vec2(uRgbShift, 0.0), uTime);
-    vec3 channelSignal = vec3(redSignal, signal, blueSignal);
+  vec3 waveColor = uColor * (0.35 + signal * 0.75 + glow * uBloom * 0.65);
+  waveColor += (channelSignal - signal) * 0.35;
+  waveColor = max(waveColor * uBrightness, vec3(0.0));
 
-    vec3 waveColor = uColor * (0.35 + signal * 0.75 + glow * uBloom * 0.65);
-    waveColor += (channelSignal - signal) * 0.35;
-    waveColor = max(waveColor * uBrightness, vec3(0.0));
-
-    color = mix(uBackgroundColor, waveColor, waveMask);
-    color += (grain - 0.5) * uNoise;
-  }
+  vec3 color = mix(uBackgroundColor, waveColor, waveMask);
+  color += (grain - 0.5) * uNoise;
 
   // Boundary check for curved CRT barrel edges
   if (curvedUv.x < 0.0 || curvedUv.x > 1.0 || curvedUv.y < 0.0 || curvedUv.y > 1.0) {
@@ -261,25 +243,26 @@ void main() {
       const dpr = parseFloat(container.dataset.dpr || '1');
       const fps = Math.max(1, parseFloat(container.dataset.fps || '60'));
       const paused = container.dataset.paused === '1';
-      const autoTheme = container.dataset.autoTheme === '1';
 
       const scene = new THREE.Scene();
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
       const geometry = new THREE.PlaneGeometry(2, 2);
 
-      const isLightInitially = autoTheme && document.documentElement.classList.contains('light-theme');
-      const effectiveColor = isLightInitially ? '#b45309' : rawColor;
-      const effectiveBgColor = isLightInitially ? '#f8fafc' : rawBgColor;
+      // Randomize initial time and seed for organic, non-repeating plasma patterns across reloads
+      const parsedSeed = container.dataset.seed ? parseFloat(container.dataset.seed) : 0;
+      const effectiveSeed = parsedSeed !== 0 ? parsedSeed : (Math.random() * 200.0 + 1.0);
+      const initialTime = Math.random() * 1000.0;
 
       const material = new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
         uniforms: {
           uResolution: { value: new THREE.Vector2(1, 1) },
-          uTime: { value: 0 },
+          uTime: { value: initialTime },
+          uSeed: { value: effectiveSeed },
           uSpeed: { value: speed },
-          uColor: { value: new THREE.Color(effectiveColor) },
-          uBackgroundColor: { value: new THREE.Color(effectiveBgColor) },
+          uColor: { value: new THREE.Color(rawColor) },
+          uBackgroundColor: { value: new THREE.Color(rawBgColor) },
           uCurvature: { value: curvature },
           uScanlineStrength: { value: scanlineStr },
           uScanlineFrequency: { value: scanlineFreq },
@@ -295,7 +278,6 @@ void main() {
           uPointer: { value: new THREE.Vector2(0, 0) },
           uMouseStrength: { value: mouseStrength },
           uMouseReact: { value: mouseReact ? 1 : 0 },
-          uIsLight: { value: isLightInitially ? 1.0 : 0.0 },
         },
       });
 
@@ -339,17 +321,8 @@ void main() {
       let animId: number | null = null;
       let lastFrame = 0;
 
-      // Theme synchronization
-      const syncThemeColors = () => {
-        if (!autoTheme) return;
-        const isLight = document.documentElement.classList.contains('light-theme');
-        material.uniforms.uIsLight.value = isLight ? 1.0 : 0.0;
-        material.uniforms.uColor.value.set(isLight ? '#b45309' : rawColor);
-        material.uniforms.uBackgroundColor.value.set(isLight ? '#f8fafc' : rawBgColor);
-      };
-
-      const themeObserver = new MutationObserver(syncThemeColors);
-      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+      material.uniforms.uColor.value.set(rawColor);
+      material.uniforms.uBackgroundColor.value.set(rawBgColor);
 
       const render = (now: number) => {
         animId = requestAnimationFrame(render);
@@ -393,7 +366,6 @@ void main() {
           if (animId !== null) cancelAnimationFrame(animId);
           resizeObserver.disconnect();
           visibilityObserver.disconnect();
-          themeObserver.disconnect();
           window.removeEventListener('resize', resize);
           window.removeEventListener('pointermove', onPointerMove);
           window.removeEventListener('pointerleave', onPointerLeave);

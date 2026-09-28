@@ -25,6 +25,8 @@ const {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0a0c" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
@@ -33,45 +35,91 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
 
-    <!-- CRT Boot & Theme Initializer: Runs synchronously in <head> before any DOM is rendered -->
+    <!-- CRT Boot State Manager: Runs synchronously in <head> before any DOM is rendered -->
     <script is:inline>
-      const initBootAndTheme = () => {
-        const isBooted = sessionStorage.getItem('portfolio_crt_booted') === 'true' || sessionStorage.getItem('portfolio_door_opened') === 'true';
-        if (isBooted) {
-          document.documentElement.classList.add('crt-booted');
-          const theme = localStorage.getItem('portfolio-theme') || 'light';
-          if (theme !== 'dark') {
-            document.documentElement.classList.add('light-theme');
+      (function() {
+        try {
+          const hasSeen = localStorage.getItem('portfolio_splash_seen') === 'true' ||
+                          sessionStorage.getItem('portfolio_splash_seen') === 'true' ||
+                          sessionStorage.getItem('portfolio_door_opened') === 'true' ||
+                          sessionStorage.getItem('portfolio_crt_booted') === 'true';
+          if (!hasSeen) {
+            document.documentElement.classList.add('needs-splash');
           } else {
-            document.documentElement.classList.remove('light-theme');
+            document.documentElement.classList.remove('needs-splash');
+            document.documentElement.classList.add('crt-booted');
           }
-        } else {
-          // Keep dark mode during initial splash screen (prevents white/light flash in production)
-          document.documentElement.classList.remove('light-theme', 'crt-booted');
-        }
-      };
-      initBootAndTheme();
-      document.addEventListener('astro:after-swap', initBootAndTheme);
+          document.documentElement.classList.remove('light-theme');
+          localStorage.removeItem('portfolio-theme');
+        } catch (e) {}
+      })();
+      document.addEventListener('astro:after-swap', () => {
+        try {
+          const hasSeen = localStorage.getItem('portfolio_splash_seen') === 'true' ||
+                          sessionStorage.getItem('portfolio_splash_seen') === 'true' ||
+                          sessionStorage.getItem('portfolio_door_opened') === 'true' ||
+                          sessionStorage.getItem('portfolio_crt_booted') === 'true';
+          if (!hasSeen) {
+            document.documentElement.classList.add('needs-splash');
+          } else {
+            document.documentElement.classList.remove('needs-splash');
+            document.documentElement.classList.add('crt-booted');
+          }
+        } catch (e) {}
+      });
     </script>
 
-    <!-- Critical Zero-Flash Preboot Inline Styles (Guarantees zero content flash before splash) -->
+    <!-- Critical Zero-Flash Preboot Inline Styles -->
     <style is:inline id="critical-boot-curtain-style">
-      /* Initial state before splash screen boots: entire page content is hidden */
-      #app-content-root {
-        display: none !important;
+      /* Pure dark CRT terminal background enforced at 0ms */
+      :root, html {
+        background-color: #0a0a0c !important;
+        color-scheme: dark !important;
       }
-      /* When booted, reveal application content */
-      html.crt-booted #app-content-root {
+      body {
+        background-color: #0a0a0c !important;
+      }
+
+      /* DEFAULT STATE (Normal page, F5 reloads): Page is active, Splash is totally DEAD */
+      #app-content-root {
         display: flex !important;
       }
-      /* Hide splash screen and curtain immediately if booted */
-      html.crt-booted #crt-splash-screen,
-      html.crt-booted #critical-boot-curtain {
-        display: none !important;
-        pointer-events: none !important;
-      }
-      /* Fallback black shield at 0ms */
+      #crt-splash-screen,
       #critical-boot-curtain {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        top: -99999px !important;
+        left: -99999px !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+
+      /* FIRST VISIT ONLY: Active strictly when needs-splash is set */
+      html.needs-splash #app-content-root {
+        display: none !important;
+      }
+      html.needs-splash #crt-splash-screen {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        width: 100dvw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background-color: #000000 !important;
+        z-index: 9999999 !important;
+      }
+      html.needs-splash #critical-boot-curtain {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -88,24 +136,40 @@ const {
     <!-- Astro View Transitions -->
     <ClientRouter />
   </head>
-  <body class={`bg-[#0a0a0c] text-zinc-300 antialiased flex flex-col relative font-mono selection:bg-amber-700 selection:text-amber-100 ${
-    isHome ? 'h-screen h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen overflow-x-hidden'
-  }`}>
+  <body class="bg-[#0a0a0c] text-zinc-300 antialiased flex flex-col relative font-mono selection:bg-amber-700 selection:text-amber-100 min-h-screen overflow-x-hidden">
     <!-- Instant 0ms Critical Black Curtain (Guarantees zero flash of page content on first visit) -->
-    <div id="critical-boot-curtain" aria-hidden="true"></div>
+    <div id="critical-boot-curtain" style="display: none; opacity: 0; visibility: hidden;" aria-hidden="true"></div>
 
     <!-- CRT TV Turn-On / Resident Evil 3D Door Splash Screen -->
     <CRTSplash />
 
+    <!-- Synchronous DOM pruner: permanently eliminates splash from DOM at parse time if not needed -->
+    <script is:inline>
+      (function() {
+        try {
+          const hasSeen = localStorage.getItem('portfolio_splash_seen') === 'true' ||
+                          sessionStorage.getItem('portfolio_splash_seen') === 'true' ||
+                          sessionStorage.getItem('portfolio_door_opened') === 'true' ||
+                          sessionStorage.getItem('portfolio_crt_booted') === 'true';
+          if (hasSeen || !document.documentElement.classList.contains('needs-splash')) {
+            const splashEl = document.getElementById('crt-splash-screen');
+            if (splashEl) splashEl.remove();
+            const curtainEl = document.getElementById('critical-boot-curtain');
+            if (curtainEl) curtainEl.remove();
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Application Content Root (Hidden until splash sequence finishes) -->
-    <div id="app-content-root" class={`relative flex flex-col flex-1 w-full ${isHome ? 'h-full overflow-hidden' : 'min-h-screen overflow-x-hidden'}`}>
+    <div id="app-content-root" class="relative flex flex-col flex-1 w-full min-h-screen overflow-x-hidden">
 
     <!-- Persistent Full-Width CRT Warp Plasma Background across all pages -->
     <div
       id="crt-warp-bg-layer"
       transition:persist="crt-warp-bg"
-      style={`view-transition-name: none !important; opacity: ${isHome ? '0.45' : '0.18'};`}
-      class="fixed inset-0 w-screen h-screen pointer-events-none z-0 overflow-hidden transition-opacity duration-500"
+      style="view-transition-name: none !important; opacity: 0; transition: opacity 0.6s ease-out;"
+      class="fixed inset-0 w-screen h-screen pointer-events-none z-0 overflow-hidden"
     >
       <CRTWarp
         color="#f59e0b"
@@ -128,7 +192,6 @@ const {
         dpr={1}
         fps={60}
         paused={false}
-        autoTheme={true}
       />
     </div>
 
@@ -144,8 +207,8 @@ const {
     <!-- Main Content with Slot -->
     <div class={`relative z-10 flex flex-col ${
       isHome 
-        ? 'h-full flex-1 pt-18 sm:pt-20 pb-0 overflow-hidden' 
-        : 'flex-1 pt-24 pb-12'
+        ? 'min-h-full flex-1 pt-16 sm:pt-20 pb-0' 
+        : 'flex-1 pt-20 sm:pt-24 pb-12'
     }`}>
       <slot />
     </div>
@@ -155,23 +218,50 @@ const {
     </div>
 
     <script>
-      // Ensure home page is strictly 100vh with zero scroll and adjust background opacity
+      let warpInitialized = false;
+
+      // Manage CRT Warp background opacity and responsive scroll policy
       function enforcePageScrollPolicy() {
         const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
-        if (isHomePage) {
-          document.body.classList.add('overflow-hidden', 'h-screen', 'max-h-screen');
-          document.documentElement.classList.add('overflow-hidden');
-        } else {
-          document.body.classList.remove('overflow-hidden', 'h-screen', 'max-h-screen');
-          document.documentElement.classList.remove('overflow-hidden');
-        }
+        document.body.classList.remove('overflow-hidden', 'h-screen', 'max-h-screen');
+        document.documentElement.classList.remove('overflow-hidden');
 
         // Adjust CRT Warp background opacity: atmospheric (0.45) on Home, subtle (0.18) on content pages
         const bgLayer = document.getElementById('crt-warp-bg-layer');
         if (bgLayer) {
-          bgLayer.style.opacity = isHomePage ? '0.45' : '0.18';
+          const targetOpacity = isHomePage ? '0.45' : '0.18';
+          const isSplashActive = document.documentElement.classList.contains('needs-splash');
+
+          if (isSplashActive) {
+            // Splash screen is running; wait for 'portfolio-booted' event before revealing CRT warp
+            return;
+          }
+
+          if (!warpInitialized) {
+            // Initial load / F5 reload: start with solid dark background, wait 0.6s, then smoothly fade in
+            setTimeout(() => {
+              bgLayer.style.opacity = targetOpacity;
+              warpInitialized = true;
+            }, 600);
+          } else {
+            // Subsequent SPA route transitions: update opacity smoothly right away
+            bgLayer.style.opacity = targetOpacity;
+          }
         }
       }
+
+      window.addEventListener('resize', enforcePageScrollPolicy);
+      window.addEventListener('portfolio-booted', () => {
+        const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
+        const bgLayer = document.getElementById('crt-warp-bg-layer');
+        if (bgLayer) {
+          const targetOpacity = isHomePage ? '0.45' : '0.18';
+          setTimeout(() => {
+            bgLayer.style.opacity = targetOpacity;
+            warpInitialized = true;
+          }, 350);
+        }
+      });
 
       document.addEventListener('astro:page-load', enforcePageScrollPolicy);
     </script>

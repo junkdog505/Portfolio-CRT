@@ -2,12 +2,12 @@
 const pathname = Astro.url.pathname;
 
 const navItems = [
-  { name: 'Inicio', href: '/' },
-  { name: 'Sobre Mí', href: '/sobre-mi' },
-  { name: 'Formación', href: '/formacion' },
-  { name: 'Experiencia', href: '/experiencia' },
-  { name: 'Proyectos', href: '/proyectos' },
-  { name: 'Contacto', href: '/contacto' },
+  { name: 'Inicio', href: '/', id: '01' },
+  { name: 'Sobre Mí', href: '/sobre-mi', id: '02' },
+  { name: 'Formación', href: '/formacion', id: '03' },
+  { name: 'Experiencia', href: '/experiencia', id: '04' },
+  { name: 'Proyectos', href: '/proyectos', id: '05' },
+  { name: 'Contacto', href: '/contacto', id: '06' },
 ];
 
 const isActive = (href: string) => {
@@ -16,113 +16,448 @@ const isActive = (href: string) => {
 };
 ---
 
-<header class="fixed top-0 left-0 right-0 z-40 flex flex-col items-center p-2.5 sm:p-3 pointer-events-none">
-  <!-- Top Status Telemetry Indicator -->
-  <div class="w-full max-w-5xl mb-1.5 flex items-center justify-between text-[11px] font-mono text-zinc-400 px-3 select-none">
-    <div class="flex items-center gap-2">
-      <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span class="text-zinc-200 font-bold tracking-wider crt-text-green">SYS: EN LÍNEA // DISPONIBLE</span>
-    </div>
-    <div class="hidden sm:flex items-center gap-3 text-zinc-500 text-[10px]">
-      <span class="text-amber-500 crt-text-amber font-mono">&gt;_ FULL-STACK & 3D CREATIVE</span>
-      <span>•</span>
-      <span class="text-zinc-400 font-mono">60 FPS // RETRO CRT</span>
-    </div>
-  </div>
-
-  <!-- Industrial Rust Navigation Bar with Transparency & Corner Crosshairs -->
-  <nav class="pointer-events-auto relative flex items-center gap-1 border border-amber-900/60 bg-[#0c0c10]/80 px-3 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-md">
-    <!-- Corner crosshair reticles -->
+<header id="site-header" class="fixed top-0 inset-x-0 z-50 flex justify-center pointer-events-none">
+  <!-- Nav Shell: 100% width at top -> w-fit floating dock when sticky / scrolled.
+       Element distribution remains centered in both states so elements do not jump! -->
+  <div
+    id="navbar-shell"
+    class="pointer-events-auto flex items-center relative [backdrop-filter:none]"
+  >
+    <!-- High-Contrast Prominent Corner L-Brackets (Clearly distinguishable from subtle dock border) -->
     <div class="tech-corner-tl"></div>
     <div class="tech-corner-tr"></div>
     <div class="tech-corner-bl"></div>
     <div class="tech-corner-br"></div>
 
-    <a href="/" class="mr-2 sm:mr-3 flex items-center gap-2 border-r border-amber-900/50 pr-2.5 sm:pr-3 text-amber-500 hover:text-amber-400 transition-colors">
-      <!-- Mini Terminal Prompt SVG Icon -->
-      <svg class="w-4 h-4 text-amber-500 crt-text-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
-        <polyline points="4 17 10 11 4 5"></polyline>
-        <line x1="12" y1="19" x2="20" y2="19"></line>
+    <!-- Pure Code Logo: Clean { ; } without outer boxes or clutter -->
+    <a
+      href="/"
+      class="group flex items-center select-none py-1 transition-all shrink-0"
+      title="Code Terminal Root // { ; }"
+    >
+      <svg
+        class="h-6 sm:h-7 w-auto select-none overflow-visible filter drop-shadow-[0_0_8px_rgba(245,158,11,0.65)] group-hover:drop-shadow-[0_0_14px_rgba(251,191,36,0.95)] transition-all"
+        viewBox="0 0 52 26"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <!-- Left Curly Brace { -->
+        <path
+          d="M14 4 H8 V8 H5 V11 H2 V15 H5 V18 H8 V22 H14 V19 H10 V15 H7 V11 H10 V7 H14 V4 Z"
+          fill="#f59e0b"
+          class="group-hover:fill-amber-300 transition-colors"
+        />
+
+        <!-- Center Semicolon ; in Phosphor Gold -->
+        <g fill="#fbbf24" class="group-hover:fill-yellow-100 transition-colors">
+          <!-- Upper Dot -->
+          <rect x="24.5" y="7.5" width="3" height="3" rx="0.5" />
+          <!-- Lower Dot + Comma Tail -->
+          <rect x="24.5" y="13.5" width="3" height="3" rx="0.5" />
+          <path d="M24.5 16.5 H27.5 L26 20.5 H23.5 L24.5 16.5 Z" />
+        </g>
+
+        <!-- Right Curly Brace } -->
+        <path
+          d="M38 4 H44 V8 H47 V11 H50 V15 H47 V18 H44 V22 H38 V19 H42 V15 H45 V11 H42 V7 H38 V4 Z"
+          fill="#f59e0b"
+          class="group-hover:fill-amber-300 transition-colors"
+        />
       </svg>
-      <span class="text-xs font-bold tracking-wider crt-text-amber font-mono">PORTFOLIO</span>
     </a>
 
-    <ul class="flex items-center gap-1 overflow-x-auto py-0.5 no-scrollbar">
+    <!-- Desktop Nav Links (Clean text, 0.3s smooth pulse ONLY on bottom line every 3s) -->
+    <ul class="hidden md:flex items-center gap-4 lg:gap-8 font-mono text-[11px] lg:text-xs shrink-0">
       {navItems.map((item) => {
         const active = isActive(item.href);
         return (
           <li>
             <a
               href={item.href}
-              class={`px-2.5 sm:px-3 py-1 text-xs font-mono tracking-wider transition-all duration-150 block whitespace-nowrap ${
+              class={`group relative py-1.5 px-2 font-mono text-xs uppercase tracking-wider select-none block transition-colors duration-150 ${
                 active
-                  ? 'bg-amber-600 text-black font-bold shadow-[0_0_10px_rgba(217,119,6,0.6)]'
-                  : 'text-zinc-400 hover:text-amber-300 hover:bg-amber-950/20'
+                  ? 'text-amber-300 font-bold drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]'
+                  : 'text-zinc-400 hover:text-amber-200'
               }`}
             >
-              {item.name}
+              <span class="flex items-center gap-1.5">
+                {active && (
+                  <span class="text-amber-400 font-black text-[11px]">&gt;</span>
+                )}
+                <span class="relative z-10">{item.name}</span>
+              </span>
+
+              {/* Bottom Line: Procedural sweep for 0.6s every 3s when active */}
+              <span
+                class={`absolute bottom-0 inset-x-0 h-[2px] rounded-full overflow-hidden transition-all duration-200 ${
+                  active
+                    ? 'active-bottom-line'
+                    : 'bg-amber-400/80 scale-x-0 group-hover:scale-x-100 shadow-[0_0_8px_#f59e0b] origin-center'
+                }`}
+              />
             </a>
           </li>
         );
       })}
     </ul>
 
-    <!-- Separator -->
-    <div class="h-4 w-px bg-amber-900/50 mx-1 sm:mx-1.5 hidden sm:block"></div>
-
-    <!-- Theme Toggle Switch (Dark / Light Mode) -->
+    <!-- Mobile Menu Toggle Button (Visible below md) -->
     <button
-      id="theme-toggle-btn"
       type="button"
-      class="crt-btn text-xs py-1 px-2.5 ml-1 border-amber-600/70 select-none flex items-center gap-1.5"
-      title="Alternar entre Modo Oscuro y Modo Claro"
-      aria-label="Alternar modo oscuro y modo claro"
+      id="mobile-menu-btn"
+      class="md:hidden flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono text-amber-400 border border-amber-800/80 bg-amber-950/30 hover:bg-amber-900/40 select-none cursor-pointer shrink-0"
+      aria-label="Alternar menú de navegación"
+      aria-expanded="false"
+      aria-controls="mobile-menu-dropdown"
     >
-      <span id="theme-icon">☀️</span>
-      <span id="theme-label" class="text-[10px] font-bold hidden sm:inline">CLARO</span>
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+      <span id="mobile-menu-text" class="font-bold crt-text-amber">[MENÚ ☰]</span>
     </button>
-  </nav>
+
+    <!-- Mobile Floating Tech Dropdown Panel -->
+    <div
+      id="mobile-menu-dropdown"
+      class="hidden md:hidden absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 max-w-[90vw] border border-amber-600/70 bg-[#08080c] shadow-[0_16px_40px_rgba(0,0,0,0.95),0_0_15px_rgba(217,119,6,0.2)] p-2.5 text-xs font-mono transition-all duration-200 [backdrop-filter:none] tech-card z-50"
+    >
+      <div class="tech-corner-tl"></div>
+      <div class="tech-corner-tr"></div>
+      <div class="tech-corner-bl"></div>
+      <div class="tech-corner-br"></div>
+
+      <div class="flex items-center justify-between border-b border-amber-900/40 pb-1.5 mb-1.5 px-1 text-[10px] text-zinc-400">
+        <span class="text-amber-500 crt-text-amber font-bold">&gt;_ TERMINAL // RUTAS</span>
+        <span class="text-amber-400 crt-text-amber font-bold">● ACTIVO</span>
+      </div>
+
+      <ul class="flex flex-col gap-1.5">
+        {navItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <li>
+              <a
+                href={item.href}
+                class={`flex items-center justify-between px-2.5 py-1.5 border transition-all ${
+                  active
+                    ? 'border-amber-400 bg-amber-950/40 text-amber-300 font-bold border-l-4 border-l-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
+                    : 'border-amber-900/30 bg-black/50 text-zinc-400 hover:text-amber-300 hover:border-amber-600/60'
+                }`}
+              >
+                <div class="flex items-center gap-2">
+                  <span class={`text-[10px] font-bold ${active ? 'text-amber-400' : 'text-amber-600'}`}>{item.id}.</span>
+                  <span class="tracking-wider uppercase">{item.name}</span>
+                </div>
+                {active && (
+                  <span class="text-[9px] text-amber-400 font-bold crt-text-amber">[ACTIVO]</span>
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </div>
 </header>
 
-<script>
-  function setupThemeToggle() {
-    const btn = document.getElementById('theme-toggle-btn');
-    const icon = document.getElementById('theme-icon');
-    const label = document.getElementById('theme-label');
+<style>
+  /* 0.3s Smooth Transition: The element distribution remains centered so elements DO NOT jump */
+  #navbar-shell {
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                padding 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                margin-top 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+  }
 
-    function syncState() {
-      const isLight = document.documentElement.classList.contains('light-theme');
-      if (icon) icon.textContent = isLight ? '☀️' : '🌙';
-      if (label) label.textContent = isLight ? 'CLARO' : 'OSCURO';
-    }
+  /* 1. TOP STATE (MOBILE < 768px): 100% width edge-to-edge, logo left & menu right */
+  #navbar-shell:not(.is-sticky) {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0;
+    border-width: 0 0 1px 0;
+    border-color: rgba(180, 83, 9, 0.4);
+    background-color: rgba(8, 8, 12, 0.95);
+    padding: 0.85rem 1.25rem;
+    justify-content: space-between;
+    box-shadow: none;
+  }
 
-    syncState();
-
-    if (btn) {
-      btn.onclick = () => {
-        const isNowLight = document.documentElement.classList.toggle('light-theme');
-        localStorage.setItem('portfolio-theme', isNowLight ? 'light' : 'dark');
-        syncState();
-
-        // Mechanical switch click sound FX
-        try {
-          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(isNowLight ? 880 : 440, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.05);
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.05);
-        } catch (e) {}
-      };
+  /* 1. TOP STATE (DESKTOP >= 768px): 100% full width background bar, elements centered */
+  @media (min-width: 768px) {
+    #navbar-shell:not(.is-sticky) {
+      padding: 0.85rem 1.5rem;
+      justify-content: center;
+      gap: 1.75rem;
     }
   }
 
-  // Support Astro View Transitions
-  document.addEventListener('astro:page-load', setupThemeToggle);
+  @media (min-width: 1024px) {
+    #navbar-shell:not(.is-sticky) {
+      padding: 0.85rem 2.5rem;
+      gap: 3rem;
+    }
+  }
+
+  /* 2. STICKY STATE (MOBILE < 768px): Floating compact dock */
+  #navbar-shell.is-sticky {
+    width: 92vw;
+    max-width: 440px;
+    margin-top: 0.5rem;
+    border-width: 1px;
+    border-color: rgba(217, 119, 6, 0.3);
+    background-color: #08080c;
+    padding: 0.5rem 1rem;
+    justify-content: space-between;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.95), 0 0 20px rgba(217, 119, 6, 0.2);
+  }
+
+  /* 2. STICKY STATE (DESKTOP >= 768px): Floating centered dock (w-fit).
+     Subtle border so the bold corner reticles stand out clearly! */
+  @media (min-width: 768px) {
+    #navbar-shell.is-sticky {
+      width: -moz-fit-content;
+      width: fit-content;
+      max-width: calc(100vw - 2rem);
+      margin-top: 0.75rem;
+      border-width: 1px;
+      border-color: rgba(217, 119, 6, 0.3);
+      padding: 0.5rem 1.5rem;
+      justify-content: center;
+      gap: 1.75rem;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.95), 0 0 22px rgba(217, 119, 6, 0.18);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    #navbar-shell.is-sticky {
+      gap: 3rem;
+      padding: 0.5rem 2rem;
+    }
+  }
+
+  /* Prominent, Distinct Corner L-Brackets for the Floating Dock */
+  .tech-corner-tl {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 12px;
+    height: 12px;
+    border-top: 2.5px solid #fbbf24;
+    border-left: 2.5px solid #fbbf24;
+    filter: drop-shadow(0 0 5px #f59e0b);
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .tech-corner-tr {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-top: 2.5px solid #fbbf24;
+    border-right: 2.5px solid #fbbf24;
+    filter: drop-shadow(0 0 5px #f59e0b);
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .tech-corner-bl {
+    position: absolute;
+    bottom: -2px;
+    left: -2px;
+    width: 12px;
+    height: 12px;
+    border-bottom: 2.5px solid #fbbf24;
+    border-left: 2.5px solid #fbbf24;
+    filter: drop-shadow(0 0 5px #f59e0b);
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .tech-corner-br {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-bottom: 2.5px solid #fbbf24;
+    border-right: 2.5px solid #fbbf24;
+    filter: drop-shadow(0 0 5px #f59e0b);
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Corner crosshairs only active in sticky floating dock mode */
+  #navbar-shell:not(.is-sticky) .tech-corner-tl,
+  #navbar-shell:not(.is-sticky) .tech-corner-tr,
+  #navbar-shell:not(.is-sticky) .tech-corner-bl,
+  #navbar-shell:not(.is-sticky) .tech-corner-br {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #navbar-shell.is-sticky .tech-corner-tl,
+  #navbar-shell.is-sticky .tech-corner-tr,
+  #navbar-shell.is-sticky .tech-corner-bl,
+  #navbar-shell.is-sticky .tech-corner-br {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Active Link Bottom Line Base */
+  .active-bottom-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 9999px;
+    background-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
+    overflow: hidden;
+    animation: activeBaseLinePulse 3s ease-in-out infinite;
+  }
+
+  /* Procedural Traveling Laser Sweep: Smoothly sweeps across the line in 0.6s every 3s */
+  .active-bottom-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 45%;
+    left: -50%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(245, 158, 11, 0.6) 20%,
+      #fffbeb 50%,
+      #fbbf24 80%,
+      transparent 100%
+    );
+    filter: drop-shadow(0 0 8px #fbbf24);
+    animation: proceduralBeamSweep 3s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  }
+
+  @keyframes proceduralBeamSweep {
+    /* 0s to 2.4s (80% of 3s): Dormant waiting */
+    0%, 80% {
+      left: -50%;
+      opacity: 0;
+    }
+    /* 2.4s: Begins procedural entry from the left */
+    81% {
+      left: -45%;
+      opacity: 1;
+    }
+    /* 2.4s to 3.0s (0.60s sweep): Sweeps smoothly across to the right edge */
+    99% {
+      left: 115%;
+      opacity: 1;
+    }
+    100% {
+      left: 125%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes activeBaseLinePulse {
+    0%, 78%, 100% {
+      background-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
+    }
+    85%, 96% {
+      background-color: rgba(245, 158, 11, 0.7);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.55);
+    }
+  }
+</style>
+
+<script>
+  function setupNavbar() {
+    const shell = document.getElementById('navbar-shell');
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu-dropdown');
+    const menuText = document.getElementById('mobile-menu-text');
+
+    // 1. Sticky / Top transition handler
+    function handleScroll() {
+      if (!shell) return;
+      const isScrolled = window.scrollY > 20;
+      shell.classList.toggle('is-sticky', isScrolled);
+    }
+
+    window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    // 2. Mobile Menu
+    if (!btn || !menu) return;
+
+    let isOpen = false;
+
+    function playBeep(freq = 700) {
+      try {
+        const AudioClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioClass) return;
+        const ctx = new AudioClass();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.5, ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    function toggleMenu(open?: boolean) {
+      isOpen = open !== undefined ? open : !isOpen;
+      btn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+      if (isOpen) {
+        menu?.classList.remove('hidden');
+        if (menuText) menuText.textContent = '[CERRAR ✕]';
+        playBeep(880);
+      } else {
+        menu?.classList.add('hidden');
+        if (menuText) menuText.textContent = '[MENÚ ☰]';
+        playBeep(440);
+      }
+    }
+
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    };
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (isOpen && !menu.contains(e.target as Node) && !btn.contains(e.target as Node)) {
+        toggleMenu(false);
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        toggleMenu(false);
+      }
+    });
+
+    // Auto-close when clicking any link inside dropdown
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        toggleMenu(false);
+      });
+    });
+  }
+
+  // Setup on initial load and View Transitions
+  document.addEventListener('astro:page-load', setupNavbar);
 </script>

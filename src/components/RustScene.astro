@@ -310,44 +310,23 @@
   let sparkLight: THREE.PointLight | null = null;
 
   function updateThemeLighting() {
-    const isLight = document.documentElement.classList.contains('light-theme');
-    if (isLight) {
-      // MODE LIGHT: Clean, crisp architectural studio lighting
-      if (ambientLight) {
-        ambientLight.color.setHex(0xe2e8f0);
-        ambientLight.intensity = 2.6;
-      }
-      if (keyLight) {
-        keyLight.color.setHex(0xffffff);
-        keyLight.intensity = 2.8;
-      }
-      if (amberRimLight) {
-        amberRimLight.color.setHex(0xfef3c7);
-        amberRimLight.intensity = 1.0;
-      }
-      if (phosphorFillLight) {
-        phosphorFillLight.color.setHex(0x94a3b8);
-        phosphorFillLight.intensity = 1.2;
-      }
-    } else {
-      // MODE DARK: Atmospheric Analog Horror / Rustpunk lighting with warm amber rim glow
-      // Gives soft, moody, high-relief illumination so dark metals stand out beautifully!
-      if (ambientLight) {
-        ambientLight.color.setHex(0x78350f); // Warm bronze-amber ambient lift
-        ambientLight.intensity = 2.6;
-      }
-      if (keyLight) {
-        keyLight.color.setHex(0xfef3c7); // Warm tungsten inspection light
-        keyLight.intensity = 3.2;
-      }
-      if (amberRimLight) {
-        amberRimLight.color.setHex(0xf59e0b); // Rich amber edge silhouette outline
-        amberRimLight.intensity = 4.2;
-      }
-      if (phosphorFillLight) {
-        phosphorFillLight.color.setHex(0x38bdf8); // Cyan CRT phosphor bounce fill
-        phosphorFillLight.intensity = 1.8;
-      }
+    // Pure Dark Mode: Atmospheric Analog Horror / Rustpunk lighting with warm amber rim glow
+    // Gives soft, moody, high-relief illumination so dark metals stand out beautifully!
+    if (ambientLight) {
+      ambientLight.color.setHex(0x78350f); // Warm bronze-amber ambient lift
+      ambientLight.intensity = 2.6;
+    }
+    if (keyLight) {
+      keyLight.color.setHex(0xfef3c7); // Warm tungsten inspection light
+      keyLight.intensity = 3.2;
+    }
+    if (amberRimLight) {
+      amberRimLight.color.setHex(0xf59e0b); // Rich amber edge silhouette outline
+      amberRimLight.intensity = 4.2;
+    }
+    if (phosphorFillLight) {
+      phosphorFillLight.color.setHex(0x38bdf8); // Cyan CRT phosphor bounce fill
+      phosphorFillLight.intensity = 1.8;
     }
   }
 
@@ -1106,6 +1085,8 @@
   // =========================================================================
   // Reposition & Switch Prop based on Active Page (Without jumping)
   // =========================================================================
+  let hadRealAnchorBefore = false;
+
   function updateTargetPositionFromDOM(immediate = false) {
     const anchor = document.querySelector('[data-rust-slot]') as HTMLElement | null;
     const pathname = window.location.pathname;
@@ -1140,6 +1121,7 @@
       let centerY = window.innerHeight * 0.48;
       let widthPx = 380;
       let heightPx = 320;
+      let hasRealAnchor = false;
 
       if (anchor) {
         const rect = anchor.getBoundingClientRect();
@@ -1148,6 +1130,7 @@
           centerY = rect.top + rect.height / 2;
           widthPx = rect.width;
           heightPx = rect.height;
+          hasRealAnchor = true;
         }
       }
 
@@ -1179,7 +1162,10 @@
       const mult = propScaleMultipliers[targetPropKey] || 0.85;
       targetScale = Math.max(0.35, Math.min(0.95, normSize * mult));
 
-      if (immediate) {
+      // Snap immediately if requested or if transitioning from fallback to first real anchor
+      const shouldSnap = immediate || (!hadRealAnchorBefore && hasRealAnchor);
+
+      if (shouldSnap) {
         currentPos.copy(targetPos);
         currentScale = targetScale;
         manualRot.x = 0;
@@ -1190,6 +1176,10 @@
           activeGroup.scale.setScalar(currentScale);
           activeGroup.rotation.set(0, 0, 0);
         }
+      }
+
+      if (hasRealAnchor) {
+        hadRealAnchorBefore = true;
       }
     }
   }
@@ -1343,7 +1333,7 @@
     slot.onpointerup = (e: PointerEvent) => {
       isDragging = false;
       const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
-      if (dist < 12 && currentActivePropKey === 'laptop') {
+      if (dist < 28 && currentActivePropKey === 'laptop') {
         window.dispatchEvent(new CustomEvent('laptop-easter-egg'));
       }
       try {
@@ -1375,18 +1365,55 @@
   window.addEventListener('resize', handleResize);
   window.addEventListener('scroll', () => updateTargetPositionFromDOM(false), { passive: true });
 
+  // Continuous slot monitoring so the 3D model always tracks DOM shifts, fonts, and visibility
+  let slotResizeObserver: ResizeObserver | null = null;
+  function setupSlotObserver() {
+    if (slotResizeObserver) {
+      slotResizeObserver.disconnect();
+      slotResizeObserver = null;
+    }
+    const slot = document.querySelector('[data-rust-slot]') as HTMLElement | null;
+    if (slot && typeof ResizeObserver !== 'undefined') {
+      slotResizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect.width > 20 && entry.contentRect.height > 20) {
+            updateTargetPositionFromDOM(false);
+          }
+        }
+      });
+      slotResizeObserver.observe(slot);
+    }
+  }
+
+  // Synchronization with initial splash screen reveal: snap model right to slot behind dissolving curtain
+  window.addEventListener('portfolio-booted', () => {
+    requestAnimationFrame(() => {
+      updateTargetPositionFromDOM(true);
+      attachSlotListeners();
+      setupSlotObserver();
+      updateThemeLighting();
+    });
+    // Extra guard passes during dissolve animation
+    setTimeout(() => updateTargetPositionFromDOM(false), 200);
+    setTimeout(() => updateTargetPositionFromDOM(false), 500);
+  });
+
   // Immediate initialization: start Three.js without waiting solely for deferred events
   if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         initGlobalRustScene();
+        setupSlotObserver();
       });
     } else {
       initGlobalRustScene();
+      setupSlotObserver();
     }
     window.addEventListener('load', () => {
       initGlobalRustScene();
       updateTargetPositionFromDOM(false);
+      attachSlotListeners();
+      setupSlotObserver();
     });
   }
 
@@ -1396,23 +1423,19 @@
     requestAnimationFrame(() => {
       updateTargetPositionFromDOM(false);
       attachSlotListeners();
+      setupSlotObserver();
       updateThemeLighting();
     });
   });
 
   document.addEventListener('astro:after-swap', () => {
+    hadRealAnchorBefore = false;
     requestAnimationFrame(() => {
       updateTargetPositionFromDOM(false);
       attachSlotListeners();
+      setupSlotObserver();
       updateThemeLighting();
     });
   });
 
-  // Observe theme class changes to adjust 3D lighting dynamically
-  if (typeof MutationObserver !== 'undefined') {
-    const observer = new MutationObserver(() => {
-      updateThemeLighting();
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  }
 </script>

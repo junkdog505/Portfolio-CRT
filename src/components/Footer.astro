@@ -2,23 +2,58 @@
 const currentYear = new Date().getFullYear();
 ---
 
-<footer class="mt-auto border-t border-[#3f1f14] bg-[#0c0c10]/90 py-6 px-6 relative z-20 select-none">
-  <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-zinc-500">
-    <div class="flex items-center gap-3">
-      <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-      <span class="text-zinc-400">ESTADO DEL SISTEMA // ACTIVO & EN LÍNEA</span>
+<footer class="mt-auto w-full border-t border-amber-900/40 bg-[#0c0c10] py-4 relative z-20 select-none [backdrop-filter:none]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] sm:text-xs text-zinc-400">
+    <div class="flex items-center gap-2 text-center sm:text-left">
+      <span class="text-amber-500 font-bold crt-text-amber">&gt;_</span>
+      <span class="tracking-wide">INGENIERÍA DE SOFTWARE &copy; {currentYear} // TODOS LOS DERECHOS RESERVADOS</span>
     </div>
 
-    <div class="text-center sm:text-left text-zinc-500">
-      <span>INGENIERÍA DE SOFTWARE &copy; {currentYear} // TODOS LOS DERECHOS RESERVADOS</span>
-    </div>
+    <!-- Enhanced Interactive CRT Social Links with Tactile Hover Effects -->
+    <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 text-xs font-mono font-bold">
+      <a
+        href="https://github.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group relative inline-flex items-center gap-1 px-3 py-1.5 border border-amber-900/50 bg-[#08080c] text-amber-500 hover:text-amber-200 hover:border-amber-500/80 hover:bg-amber-950/40 hover:shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 transition-all duration-150 select-none overflow-hidden"
+        title="GitHub // Repositorios de Código"
+      >
+        <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">[</span>
+        <span class="tracking-wider uppercase">GITHUB</span>
+        <span class="text-amber-500/60 group-hover:text-amber-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[10px]">↗</span>
+        <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">]</span>
 
-    <div class="flex items-center gap-4 text-amber-600/90 font-bold">
-      <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 hover:underline transition-colors">[GITHUB]</a>
-      <span>//</span>
-      <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 hover:underline transition-colors">[LINKEDIN]</a>
-      <span>//</span>
-      <a href="mailto:hola@ejemplo.com" class="hover:text-amber-400 hover:underline transition-colors">[EMAIL]</a>
+        <!-- Bottom laser glow on hover -->
+        <span class="absolute bottom-0 inset-x-0 h-[1.5px] bg-amber-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center shadow-[0_0_6px_#f59e0b]"></span>
+      </a>
+
+      <a
+        href="https://linkedin.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group relative inline-flex items-center gap-1 px-3 py-1.5 border border-amber-900/50 bg-[#08080c] text-amber-500 hover:text-amber-200 hover:border-amber-500/80 hover:bg-amber-950/40 hover:shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 transition-all duration-150 select-none overflow-hidden"
+        title="LinkedIn // Perfil Profesional"
+      >
+        <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">[</span>
+        <span class="tracking-wider uppercase">LINKEDIN</span>
+        <span class="text-amber-500/60 group-hover:text-amber-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[10px]">↗</span>
+        <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">]</span>
+
+        <span class="absolute bottom-0 inset-x-0 h-[1.5px] bg-amber-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center shadow-[0_0_6px_#f59e0b]"></span>
+      </a>
+
+      <a
+        href="/contacto"
+        class="group relative inline-flex items-center gap-1 px-3 py-1.5 border border-amber-900/50 bg-[#08080c] text-amber-500 hover:text-amber-200 hover:border-amber-500/80 hover:bg-amber-950/40 hover:shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 transition-all duration-150 select-none overflow-hidden"
+        title="Terminal // Iniciar Contacto Directo"
+      >
+        <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">[</span>
+        <span class="text-amber-400 group-hover:translate-x-0.5 transition-transform text-[10px]">&gt;</span>
+        <span class="tracking-wider uppercase">CONTACTO</span>
+        <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">]</span>
+
+        <span class="absolute bottom-0 inset-x-0 h-[1.5px] bg-amber-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center shadow-[0_0_6px_#f59e0b]"></span>
+      </a>
     </div>
   </div>
 </footer>

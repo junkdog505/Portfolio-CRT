@@ -12,75 +12,60 @@ const techStack = [
 ---
 
 <Layout isHome={true} title="Inicio | Ingeniero Full-Stack & Creative 3D Developer" description="Portafolio profesional de ingeniería de software, arquitectura web escalable y experiencias interactivas en 3D en tiempo real.">
-  <div class="relative z-10 h-full w-full flex flex-col justify-between select-none px-4 sm:px-6 max-w-7xl mx-auto">
-
-    <!-- Top Telemetry Banner -->
-    <div class="relative z-10 border border-amber-900/60 bg-[#0c0c10]/85 backdrop-blur-md px-3 py-1.5 flex flex-wrap items-center justify-between text-[11px] font-mono text-zinc-400 shadow-md">
-      <div class="flex items-center gap-2.5">
-        <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-        <span class="text-amber-500 font-bold crt-text-amber tracking-wider">&gt;_ SHELL: ONLINE // ROOT</span>
-        <span class="text-zinc-500 hidden sm:inline">[PORTFOLIO // KERNEL 6.8]</span>
-      </div>
-      <div class="flex items-center gap-3 text-[10px] text-zinc-400">
-        <span class="text-emerald-400 crt-text-green font-bold">● 60 FPS STABLE</span>
-        <span>•</span>
-        <span class="text-amber-500 crt-text-amber">CORE WEB VITALS 99+</span>
-        <span class="hidden md:inline">•</span>
-        <span class="text-zinc-500 hidden md:inline">WCAG AA CERTIFIED</span>
-      </div>
-    </div>
+  <!-- Main Hero Content Container -->
+  <div class="relative z-10 flex-1 w-full flex flex-col justify-center select-none px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto my-auto py-4 lg:py-2">
 
     <!-- Main Hero Body (Center Grid: Copy Left / 3D Laptop Right) -->
-    <div class="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto py-2">
+    <div class="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center py-2 sm:py-4">
       
       <!-- Left Column: Copy, Tech Badges & CRT Action Buttons -->
       <div class="lg:col-span-7 flex flex-col justify-center space-y-3 sm:space-y-4">
         
         <!-- Engineering Badge with Reticle SVG -->
-        <div class="inline-flex items-center gap-2 border border-amber-800/80 bg-amber-950/30 px-2.5 py-1 text-[11px] text-amber-400 font-bold crt-text-amber w-fit">
-          <svg class="w-3.5 h-3.5 text-amber-400 animate-spin" style="animation-duration: 12s;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="inline-flex items-center gap-1.5 sm:gap-2 border border-amber-800/80 bg-amber-950/30 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] text-amber-400 font-bold crt-text-amber w-fit max-w-full truncate">
+          <svg class="w-3.5 h-3.5 text-amber-400 animate-spin shrink-0" style="animation-duration: 12s;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="2" x2="12" y2="6"></line>
             <line x1="12" y1="18" x2="12" y2="22"></line>
             <line x1="2" y1="12" x2="6" y2="12"></line>
             <line x1="18" y1="12" x2="22" y2="12"></line>
           </svg>
-          <span>// INGENIERO FULL-STACK & CREATIVE DEVELOPER</span>
+          <span class="truncate">// INGENIERO FULL-STACK & CREATIVE DEVELOPER</span>
         </div>
 
-        <!-- Punchy Hero Heading -->
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-zinc-100 leading-none">
+        <!-- Punchy Hero Heading (Adaptive text size for ultra-small screens) -->
+        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-zinc-100 leading-tight sm:leading-none">
           ARQUITECTURA WEB <br />
           <span class="text-amber-500 crt-text-amber">& GRÁFICOS 3D</span>
         </h1>
 
         <!-- High-impact Summary -->
-        <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed border-l-2 border-amber-700/80 pl-3.5 py-1 bg-[#100f14]/50 max-w-2xl">
+        <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed border-l-2 border-amber-700/80 pl-3 sm:pl-3.5 py-1 bg-[#100f14]/50 max-w-2xl">
           Construyo plataformas web de alto rendimiento y experiencias interactivas en tiempo real. Fusiono ingeniería de software escalable (<strong class="text-zinc-100 font-semibold">Astro, TypeScript, React, Node.js</strong>) con computación gráfica (<strong class="text-amber-400 font-semibold crt-text-amber">Three.js, WebGL y Shaders GLSL</strong>) a 60 FPS estables.
         </p>
 
-        <!-- CRT Action Buttons -->
-        <div class="flex flex-wrap gap-2.5 pt-1">
-          <a href="/proyectos" class="crt-btn text-xs py-2 px-5">
+        <!-- CRT Action Buttons (Responsive wrapping for mobile) -->
+        <div class="flex flex-wrap gap-2 sm:gap-2.5 pt-1 w-full sm:w-auto">
+          <a href="/proyectos" class="crt-btn text-xs py-2 px-3.5 sm:px-5 text-center flex-1 sm:flex-initial">
             <span>[ &gt; VER PROYECTOS &lt; ]</span>
           </a>
-          <a href="/contacto" class="crt-btn crt-btn-secondary text-xs py-2 px-5">
+          <a href="/contacto" class="crt-btn crt-btn-secondary text-xs py-2 px-3.5 sm:px-5 text-center flex-1 sm:flex-initial">
             <span>[ INICIAR CONTACTO ]</span>
           </a>
-          <a href="/sobre-mi" class="crt-btn crt-btn-green text-xs py-2 px-5">
+          <a href="/sobre-mi" class="crt-btn crt-btn-green text-xs py-2 px-3.5 sm:px-5 text-center flex-1 sm:flex-initial">
             <span>[ CONOCE MI PERFIL ]</span>
           </a>
         </div>
 
-        <!-- Real Tech Stack Badges -->
+        <!-- Real Tech Stack Badges (Adaptive wrap and sizing) -->
         <div class="pt-1">
-          <div class="text-[10px] text-zinc-500 font-mono uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+          <div class="text-[9px] sm:text-[10px] text-zinc-500 font-mono uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
             <span>[ STACK PRINCIPAL ]</span>
             <div class="h-px flex-1 bg-amber-900/30"></div>
           </div>
-          <div class="flex flex-wrap gap-1.5">
+          <div class="flex flex-wrap gap-1.5 max-w-full">
             {techStack.map((tech) => (
-              <span class={`border ${tech.color} bg-[#0c0c10]/90 px-2 py-0.5 text-[10px] font-mono flex items-center gap-1 shadow-sm`}>
+              <span class={`border ${tech.color} bg-[#0c0c10]/90 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-mono flex items-center gap-1 shadow-sm`}>
                 <span class="text-amber-500 font-bold">&bull;</span>
                 <span class="text-zinc-200 font-semibold">{tech.name}</span>
               </span>
@@ -90,9 +75,9 @@ const techStack = [
 
       </div>
 
-      <!-- Right Column: 3D Slot for Retro Laptop with Linux Terminal Frame -->
-      <div class="lg:col-span-5 flex flex-col items-center justify-center">
-        <div class="w-full max-w-[400px] h-[320px] sm:h-[350px] relative border border-[#451a03] bg-[#0c0c10]/85 p-3 shadow-2xl flex flex-col backdrop-blur-sm tech-card">
+      <!-- Right Column: 3D Slot for Retro Laptop with Linux Terminal Frame (Responsive bounds) -->
+      <div class="lg:col-span-5 flex flex-col items-center justify-center w-full">
+        <div class="w-full max-w-[320px] sm:max-w-[400px] h-[260px] sm:h-[340px] relative border border-[#451a03] bg-[#0c0c10]/85 p-3 shadow-2xl flex flex-col backdrop-blur-sm tech-card">
           <!-- Corner reticle crosshairs -->
           <div class="tech-corner-tl"></div>
           <div class="tech-corner-tr"></div>
@@ -105,7 +90,14 @@ const techStack = [
               <span class="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
               <span class="crt-text-amber font-bold">TERMINAL 3D // LINUX ARCH</span>
             </div>
-            <span class="text-emerald-400 font-mono text-[9px] crt-text-green font-bold">● CLIC: SONIDO TECLADO</span>
+            <button
+              type="button"
+              id="open-easter-egg-btn"
+              class="text-emerald-400 hover:text-emerald-300 font-mono text-[9px] crt-text-green font-bold cursor-pointer hover:underline flex items-center gap-1 transition-colors select-none"
+              title="Haz clic para ver la identidad biométrica del creador y su gato"
+            >
+              ● CLIC: IDENTIDAD / AUDIO
+            </button>
           </div>
 
           <!-- 3D ANCHOR: Laptop with Linux terminal (Centrally positioned) -->
@@ -128,126 +120,193 @@ const techStack = [
 
     </div>
 
-    <!-- Bottom Docked Navigation & System Telemetry Bar (Zero Scroll / Strict 100vh) -->
-    <div class="relative z-10 border-t border-amber-900/60 bg-[#0c0c10]/90 backdrop-blur-md px-3 py-2 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] font-mono text-zinc-400">
-      
-      <!-- Quick Route Jump Ticker -->
-      <div class="flex items-center gap-3 overflow-x-auto no-scrollbar">
-        <span class="text-amber-500 font-bold crt-text-amber hidden sm:inline">&gt; ACCESO RÁPIDO:</span>
-        <a href="/sobre-mi" class="hover:text-amber-400 hover:underline transition-colors">[ 01 SOBRE MÍ ]</a>
-        <a href="/experiencia" class="hover:text-amber-400 hover:underline transition-colors">[ 02 EXPERIENCIA ]</a>
-        <a href="/formacion" class="hover:text-amber-400 hover:underline transition-colors">[ 03 FORMACIÓN ]</a>
-        <a href="/proyectos" class="hover:text-amber-400 hover:underline transition-colors">[ 04 PROYECTOS ]</a>
-        <a href="/contacto" class="hover:text-amber-400 hover:underline transition-colors">[ 05 CONTACTO ]</a>
+  </div>
+
+  <!-- Bottom Full-Width Footer Bar (100% viewport width, zero sticky) -->
+  <footer class="w-full relative z-20 border-t border-amber-900/40 bg-[#0c0c10] py-3.5 select-none [backdrop-filter:none]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-[11px] sm:text-xs text-zinc-400">
+      <div class="flex items-center gap-2 text-center sm:text-left">
+        <span class="text-amber-500 font-bold crt-text-amber">&gt;_</span>
+        <span class="tracking-wide">INGENIERÍA DE SOFTWARE &copy; 2026 // TODOS LOS DERECHOS RESERVADOS</span>
       </div>
 
-      <!-- Social & Telemetry Badges -->
-      <div class="flex items-center gap-3 text-zinc-500">
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 transition-colors text-amber-500 font-bold crt-text-amber">[GITHUB]</a>
-        <span>//</span>
-        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 transition-colors text-amber-500 font-bold crt-text-amber">[LINKEDIN]</a>
-        <span>//</span>
-        <span class="text-zinc-400 font-mono">&copy; 2026 INGENIERÍA 3D</span>
-      </div>
+      <!-- Enhanced Interactive CRT Social Links with Tactile Hover Effects -->
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 text-xs font-mono font-bold">
+        <a
+          href="https://github.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="group relative inline-flex items-center gap-1 px-3 py-1.5 border border-amber-900/50 bg-[#08080c] text-amber-500 hover:text-amber-200 hover:border-amber-500/80 hover:bg-amber-950/40 hover:shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 transition-all duration-150 select-none overflow-hidden"
+          title="GitHub // Repositorios de Código"
+        >
+          <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">[</span>
+          <span class="tracking-wider uppercase">GITHUB</span>
+          <span class="text-amber-500/60 group-hover:text-amber-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[10px]">↗</span>
+          <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">]</span>
 
+          <span class="absolute bottom-0 inset-x-0 h-[1.5px] bg-amber-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center shadow-[0_0_6px_#f59e0b]"></span>
+        </a>
+
+        <a
+          href="https://linkedin.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="group relative inline-flex items-center gap-1 px-3 py-1.5 border border-amber-900/50 bg-[#08080c] text-amber-500 hover:text-amber-200 hover:border-amber-500/80 hover:bg-amber-950/40 hover:shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 transition-all duration-150 select-none overflow-hidden"
+          title="LinkedIn // Perfil Profesional"
+        >
+          <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">[</span>
+          <span class="tracking-wider uppercase">LINKEDIN</span>
+          <span class="text-amber-500/60 group-hover:text-amber-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[10px]">↗</span>
+          <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">]</span>
+
+          <span class="absolute bottom-0 inset-x-0 h-[1.5px] bg-amber-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center shadow-[0_0_6px_#f59e0b]"></span>
+        </a>
+
+        <a
+          href="/contacto"
+          class="group relative inline-flex items-center gap-1 px-3 py-1.5 border border-amber-900/50 bg-[#08080c] text-amber-500 hover:text-amber-200 hover:border-amber-500/80 hover:bg-amber-950/40 hover:shadow-[0_0_14px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 transition-all duration-150 select-none overflow-hidden"
+          title="Terminal // Iniciar Contacto Directo"
+        >
+          <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">[</span>
+          <span class="text-amber-400 group-hover:translate-x-0.5 transition-transform text-[10px]">&gt;</span>
+          <span class="tracking-wider uppercase">CONTACTO</span>
+          <span class="text-amber-600/70 group-hover:text-amber-400 transition-colors">]</span>
+
+          <span class="absolute bottom-0 inset-x-0 h-[1.5px] bg-amber-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center shadow-[0_0_6px_#f59e0b]"></span>
+        </a>
+      </div>
     </div>
+  </footer>
 
-    <!-- Easter Egg Modal (Revealed when clicking the 3D Laptop) -->
+    <!-- Easter Egg Modal: Developer Profile (Zero scrolls, fully contained) -->
     <div
       id="easter-egg-modal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 select-none"
+      class="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-black/90 opacity-0 pointer-events-none transition-opacity duration-300 select-none [backdrop-filter:none] overflow-hidden"
       aria-hidden="true"
       role="dialog"
-      aria-label="Easter Egg: Identidad del Creador"
+      aria-label="Registro de Identidad del Desarrollador"
     >
       <div
         id="easter-egg-card"
-        class="relative w-full max-w-sm sm:max-w-md bg-[#0c0c10] border-2 border-amber-500 shadow-[0_0_50px_rgba(245,158,11,0.4)] p-4 sm:p-5 transform scale-95 transition-all duration-300 tech-card overflow-hidden"
+        class="relative w-full max-w-[92vw] sm:max-w-[420px] flex flex-col bg-[#0a0a0e] border border-amber-600/70 shadow-[0_0_50px_rgba(245,158,11,0.35)] p-3.5 sm:p-4 transform scale-95 transition-all duration-300 overflow-hidden [backdrop-filter:none] tech-card"
       >
-        <!-- Technical Corner Brackets -->
+        <!-- Technical Corner Reticles -->
         <div class="tech-corner-tl"></div>
         <div class="tech-corner-tr"></div>
         <div class="tech-corner-bl"></div>
         <div class="tech-corner-br"></div>
 
         <!-- Card Header -->
-        <div class="flex items-center justify-between border-b border-amber-900/60 pb-2 mb-3 text-xs font-mono">
+        <div class="flex items-center justify-between border-b border-amber-900/60 pb-2 mb-2.5 text-xs font-mono shrink-0">
           <div class="flex items-center gap-2">
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <span class="text-amber-400 font-bold crt-text-amber tracking-wider">[SYS_BIOMETRIC // MATCH]</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse shadow-[0_0_8px_#f59e0b]"></span>
+            <span class="text-amber-400 font-bold tracking-wider crt-text-amber text-xs">// REGISTRO DE IDENTIDAD</span>
           </div>
           <button
             type="button"
             id="easter-egg-close"
-            class="text-zinc-400 hover:text-amber-300 font-mono text-[11px] px-2 py-0.5 border border-zinc-700 hover:border-amber-500 bg-zinc-900/80 transition-colors cursor-pointer"
+            class="text-zinc-400 hover:text-amber-300 font-mono text-xs px-2 py-0.5 border border-amber-900/60 hover:border-amber-500 bg-black/60 transition-all cursor-pointer select-none"
             title="Cerrar (Esc)"
           >
             [✕ CERRAR]
           </button>
         </div>
 
-        <!-- Photo Display with CRT Overlay -->
-        <div class="relative w-full rounded border border-amber-900/80 overflow-hidden bg-black shadow-inner">
-          <img
-            src="/creator.jpg"
-            alt="Foto del creador con su gato"
-            class="w-full h-auto object-cover max-h-[46vh] sm:max-h-[50vh] mx-auto filter contrast-105"
-            loading="eager"
-          />
-          <!-- CRT scanline overlay -->
-          <div class="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-amber-500/5 to-transparent bg-[length:100%_4px] opacity-40"></div>
-          
-          <!-- Live Camera Badge -->
-          <div class="absolute top-2 left-2 bg-black/85 border border-emerald-500/60 px-2 py-0.5 text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1.5 shadow">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>REC ● CAM_FEED_01</span>
-          </div>
+        <!-- Binary Bit Revealer Canvas Area: Strict 1/1 Square Aspect Ratio, Center-Center -->
+        <div class="w-full flex items-center justify-center my-1 shrink-0">
+          <div
+            id="creator-photo-box"
+            class="relative w-44 h-44 sm:w-52 sm:h-52 aspect-square rounded border border-amber-600/70 overflow-hidden bg-[#060609] shadow-inner shrink-0 flex items-center justify-center"
+          >
+            <canvas
+              id="binary-matrix-canvas"
+              class="w-full h-full block"
+            ></canvas>
 
-          <div class="absolute bottom-2 right-2 bg-black/85 border border-amber-500/60 px-2 py-0.5 text-[9px] font-mono text-amber-400 font-bold">
-            <span>FPS: 60 // PBR 1080P</span>
+            <!-- Top-left status badge (All Amber) -->
+            <div class="absolute top-2 left-2 bg-black/90 border border-amber-600/50 px-1.5 py-0.5 text-[9px] font-mono text-amber-400 flex items-center gap-1 shadow z-10 select-none">
+              <span id="binary-pulse-dot" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+              <span id="binary-status-label" class="crt-text-amber font-bold">BITS: [0 &rarr; 1]</span>
+            </div>
+
+            <!-- Bottom-right progress percentage (All Amber) -->
+            <div class="absolute bottom-2 right-2 bg-black/90 border border-amber-600/50 px-1.5 py-0.5 text-[9px] font-mono text-amber-400 font-bold shadow z-10 select-none crt-text-amber">
+              <span id="binary-progress-text">0%</span>
+            </div>
           </div>
         </div>
 
-        <!-- Delayed Tooltip / Identity Badge -->
-        <div
-          id="easter-egg-tooltip"
-          class="mt-3.5 border-l-2 border-amber-500 bg-amber-950/40 border border-amber-900/40 p-3 text-xs font-mono text-zinc-200 transition-all duration-500 opacity-0 translate-y-3"
-        >
-          <div class="flex items-center justify-between text-amber-400 font-bold crt-text-amber text-[11px] mb-1">
-            <span class="flex items-center gap-1.5">
-              <span class="text-emerald-400">&gt;&gt;</span>
-              <span>IDENTIDAD CONFIRMADA:</span>
-            </span>
-            <span class="text-emerald-400 crt-text-green font-bold">100% HUMANO</span>
+        <!-- Clean developer bio in retro CRT terminal style -->
+        <div class="mt-2.5 flex flex-col gap-1 shrink-0 font-mono">
+          <div class="flex items-center justify-between border-b border-amber-900/40 pb-1">
+            <h3 class="text-xs sm:text-sm font-black text-amber-400 crt-text-amber uppercase tracking-wider">ALEJANDRO M. (AMSOT)</h3>
+            <span class="text-[9px] font-mono text-amber-400 border border-amber-600/50 bg-amber-950/30 px-1.5 py-0.2 font-bold">[ONLINE]</span>
           </div>
-          <p class="leading-relaxed text-[12px] sm:text-[13px] text-zinc-100 font-sans">
-            ¡Sí, este soy yo! 👋🐱 <br />
-            <span class="text-zinc-300 font-mono text-[11px] block mt-0.5">
-              Junto a mi copiloto felino y Lead Code Reviewer. ¡Gracias por explorar mi portafolio e interactuar con la laptop 3D!
-            </span>
+          <p class="text-[11px] text-zinc-300 font-bold uppercase tracking-wide">
+            Ingeniero de Software & Creative 3D Developer
           </p>
+          <p class="text-[11px] text-zinc-400 leading-snug font-sans">
+            Experiencias interactivas en tiempo real, computación gráfica con Three.js / WebGL y arquitectura web moderna.
+          </p>
+          <div class="flex flex-wrap gap-1 pt-1 text-[9px]">
+            <span class="px-1.5 py-0.2 border border-amber-800/60 bg-black/60 text-amber-400 font-bold">[ THREE.JS ]</span>
+            <span class="px-1.5 py-0.2 border border-amber-800/60 bg-black/60 text-amber-400 font-bold">[ SHADERS GLSL ]</span>
+            <span class="px-1.5 py-0.2 border border-amber-800/60 bg-black/60 text-amber-400 font-bold">[ TYPESCRIPT ]</span>
+            <span class="px-1.5 py-0.2 border border-amber-800/60 bg-black/60 text-amber-400 font-bold">[ ASTRO ]</span>
+          </div>
         </div>
 
-        <!-- Telemetry Bar & Dismissal Prompt -->
-        <div class="mt-3 flex items-center justify-between text-[10px] font-mono text-zinc-400 border-t border-amber-900/40 pt-2">
-          <span id="easter-egg-timer-text" class="text-emerald-400 crt-text-green">AUTO-CIERRE EN 6s...</span>
-          <span class="text-amber-500 font-bold crt-text-amber">[ESC / CLIC PARA CERRAR]</span>
+        <!-- Footer countdown in Amber (30s) -->
+        <div class="mt-2.5 pt-2 border-t border-amber-900/40 flex items-center justify-between text-[10px] font-mono text-zinc-400 shrink-0 select-none">
+          <span id="easter-egg-timer-text" class="text-amber-400 font-bold crt-text-amber">AUTO-CIERRE: 30s</span>
+          <span class="text-amber-500/80 hover:text-amber-400">[ESC PARA CERRAR]</span>
         </div>
       </div>
     </div>
 
-  </div>
-
   <script>
     let cleanupEasterEgg: (() => void) | null = null;
+    let audioCtx: AudioContext | null = null;
+
+    function getAudioCtx(): AudioContext | null {
+      try {
+        if (!audioCtx) {
+          const AudioClass = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioClass) audioCtx = new AudioClass();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function playBitClick() {
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(900 + Math.random() * 800, now);
+        gain.gain.setValueAtTime(0.025, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.016);
+      } catch (_) {}
+    }
 
     function playEasterEggChime() {
       try {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContextClass) return;
-        const ctx = new AudioContextClass();
+        const ctx = getAudioCtx();
+        if (!ctx) return;
         const now = ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -269,23 +328,245 @@ const techStack = [
 
       const modal = document.getElementById('easter-egg-modal');
       const card = document.getElementById('easter-egg-card');
-      const tooltip = document.getElementById('easter-egg-tooltip');
       const closeBtn = document.getElementById('easter-egg-close');
       const timerText = document.getElementById('easter-egg-timer-text');
       const laptopSlot = document.querySelector('[data-rust-slot="laptop"]');
+      const openBtn = document.getElementById('open-easter-egg-btn');
+      const laptopCard = document.querySelector('#scene-anchor')?.closest('.tech-card');
 
       if (!modal || !card) return;
 
       let isOpen = false;
-      let tooltipTimeout: number | null = null;
+      let animId: number | null = null;
       let dismissTimeout: number | null = null;
       let countdownInterval: number | null = null;
+
+      // Preload creator image
+      const photoImg = new Image();
+      photoImg.src = '/creator.jpg';
+
+      interface ChunkTile {
+        col: number;
+        row: number;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+        value: '0' | '1';
+        revealed: boolean;
+        revealTime: number;
+        flashUntil: number;
+      }
+
+      function startBitChunkReveal() {
+        const canvas = document.getElementById('binary-matrix-canvas') as HTMLCanvasElement | null;
+        const statusLabel = document.getElementById('binary-status-label');
+        const progressText = document.getElementById('binary-progress-text');
+        const pulseDot = document.getElementById('binary-pulse-dot');
+
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        // Strict 1:1 square aspect ratio
+        const side = Math.max(176, Math.floor(rect.width > 0 ? rect.width : (rect.height > 0 ? rect.height : 192)));
+        const width = side;
+        const height = side;
+
+        // High-DPI / Retina resolution rendering
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.scale(dpr, dpr);
+
+        // Pre-render the full photograph to an offscreen buffer canvas with accurate object-fit: cover
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = Math.round(width * dpr);
+        offCanvas.height = Math.round(height * dpr);
+        const offCtx = offCanvas.getContext('2d');
+
+        function renderOffscreenPhoto() {
+          if (!offCtx) return;
+          offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+          offCtx.save();
+          offCtx.scale(dpr, dpr);
+
+          if (photoImg.complete && photoImg.naturalWidth > 0) {
+            const imgW = photoImg.naturalWidth;
+            const imgH = photoImg.naturalHeight;
+            const scale = Math.max(width / imgW, height / imgH);
+            const renderW = imgW * scale;
+            const renderH = imgH * scale;
+            const renderX = (width - renderW) / 2;
+            const renderY = (height - renderH) / 2;
+            offCtx.drawImage(photoImg, renderX, renderY, renderW, renderH);
+          } else {
+            offCtx.fillStyle = '#0c0c10';
+            offCtx.fillRect(0, 0, width, height);
+          }
+          offCtx.restore();
+        }
+
+        renderOffscreenPhoto();
+        if (!photoImg.complete) {
+          photoImg.onload = () => renderOffscreenPhoto();
+        }
+
+        // Size of each bit cell & image chunk
+        const tileSize = 16;
+        const cols = Math.ceil(width / tileSize);
+        const rows = Math.ceil(height / tileSize);
+        const totalTiles = cols * rows;
+
+        const tiles: ChunkTile[] = [];
+        const totalDuration = 2200; // 2.2 seconds to convert all 0s to 1s and reveal full photo
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = c * tileSize;
+            const y = r * tileSize;
+            const w = Math.min(tileSize, width - x);
+            const h = Math.min(tileSize, height - y);
+
+            // Progressive top-to-bottom wave with organic jitter
+            const progressRatio = (r / rows) * 0.72 + (c / cols) * 0.18 + Math.random() * 0.1;
+            const revealTime = Math.min(totalDuration, progressRatio * totalDuration);
+
+            tiles.push({
+              col: c,
+              row: r,
+              x,
+              y,
+              w,
+              h,
+              value: '0', // EVERY TILE INITIALLY STARTS AS '0'
+              revealed: false, // IMAGE IS INITIALLY 100% HIDDEN UNDER '0'
+              revealTime,
+              flashUntil: 0,
+            });
+          }
+        }
+
+        const startTime = performance.now();
+        let lastClickTime = 0;
+
+        if (statusLabel) statusLabel.textContent = 'CONVIRTIENDO: [0 -> 1]';
+        if (progressText) progressText.textContent = '0%';
+        if (pulseDot) {
+          pulseDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping';
+        }
+
+        function render(now: number) {
+          if (!isOpen) return;
+
+          const elapsed = now - startTime;
+          let revealedCount = 0;
+
+          // Check tile reveals
+          for (let i = 0; i < tiles.length; i++) {
+            const tile = tiles[i];
+            if (!tile.revealed && elapsed >= tile.revealTime) {
+              tile.revealed = true;
+              tile.value = '1'; // Converts '0' into '1', triggering piece revelation
+              tile.flashUntil = now + 150;
+
+              // Sound click blip
+              if (now - lastClickTime > 60) {
+                playBitClick();
+                lastClickTime = now;
+              }
+            }
+            if (tile.revealed) {
+              revealedCount++;
+            }
+          }
+
+          // Clear main canvas frame
+          ctx!.clearRect(0, 0, width, height);
+
+          ctx!.font = 'bold 11px ui-monospace, Menlo, Monaco, monospace';
+          ctx!.textAlign = 'center';
+          ctx!.textBaseline = 'middle';
+
+          // Render each tile
+          for (let i = 0; i < tiles.length; i++) {
+            const tile = tiles[i];
+
+            if (!tile.revealed) {
+              // STILL '0': IMAGE PIECE IS HIDDEN UNDER DARK SOLID TILE WITH AMBER '0'
+              ctx!.fillStyle = '#07070a';
+              ctx!.fillRect(tile.x, tile.y, tile.w, tile.h);
+
+              // Amber '0' bit (STRICTLY THE SAME AMBER)
+              ctx!.fillStyle = '#f59e0b';
+              ctx!.fillText('0', tile.x + tile.w / 2, tile.y + tile.h / 2);
+
+              // Subtle cell border
+              ctx!.strokeStyle = 'rgba(245, 158, 11, 0.08)';
+              ctx!.strokeRect(tile.x, tile.y, tile.w, tile.h);
+            } else {
+              // CONVERTED TO '1': DRAW THAT EXACT CHUNK FROM THE HIGH-RES OFFSCREEN PHOTO CANVAS!
+              // Perfect 1:1 mapping with zero distortion and zero seams!
+              ctx!.drawImage(
+                offCanvas,
+                tile.x * dpr,
+                tile.y * dpr,
+                tile.w * dpr,
+                tile.h * dpr,
+                tile.x,
+                tile.y,
+                tile.w,
+                tile.h
+              );
+
+              // Glowing AMBER '1' flash when freshly converted (SAME AMBER PALETTE!)
+              if (now < tile.flashUntil) {
+                ctx!.fillStyle = '#fbbf24'; // Bright amber phosphor '1'
+                ctx!.fillText('1', tile.x + tile.w / 2, tile.y + tile.h / 2);
+              }
+            }
+          }
+
+          // Update percentage counter (in amber)
+          const percent = Math.min(100, Math.floor((revealedCount / totalTiles) * 100));
+          if (progressText) {
+            progressText.textContent = `${percent}%`;
+          }
+
+          if (revealedCount < totalTiles) {
+            animId = requestAnimationFrame(render);
+          } else {
+            // COMPLETE: Draw entire photo seamlessly from offscreen buffer
+            ctx!.drawImage(offCanvas, 0, 0, offCanvas.width, offCanvas.height, 0, 0, width, height);
+
+            if (statusLabel) statusLabel.textContent = 'COMPLETO [100%]';
+            if (progressText) progressText.textContent = '100% OK';
+            if (pulseDot) {
+              pulseDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]';
+            }
+            playEasterEggChime();
+          }
+        }
+
+        animId = requestAnimationFrame(render);
+      }
 
       function closeEasterEgg() {
         if (!isOpen || !modal || !card) return;
         isOpen = false;
 
-        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+        // Restore viewport scroll
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+
+        if (animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
+        }
         if (dismissTimeout) clearTimeout(dismissTimeout);
         if (countdownInterval) clearInterval(countdownInterval);
 
@@ -294,9 +575,12 @@ const techStack = [
         card.classList.add('scale-95');
         card.classList.remove('scale-100');
 
-        if (tooltip) {
-          tooltip.classList.add('opacity-0', 'translate-y-3');
-          tooltip.classList.remove('opacity-100', 'translate-y-0');
+        // Restore 3D Scene canvas
+        const rust3d = document.getElementById('rust-3d-root');
+        if (rust3d) {
+          rust3d.style.visibility = 'visible';
+          rust3d.style.opacity = '1';
+          rust3d.style.pointerEvents = 'none';
         }
       }
 
@@ -304,45 +588,49 @@ const techStack = [
         if (isOpen || !modal || !card) return;
         isOpen = true;
 
-        playEasterEggChime();
+        // Prevent any page scrolling while modal is open
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
 
-        // 1. Show modal and photo immediately
+        // Teleport to body so it has the absolute highest stacking context
+        if (modal.parentElement !== document.body) {
+          document.body.appendChild(modal);
+        }
+
+        // Hide 3D scene so laptop never overlaps card
+        const rust3d = document.getElementById('rust-3d-root');
+        if (rust3d) {
+          rust3d.style.visibility = 'hidden';
+          rust3d.style.opacity = '0';
+          rust3d.style.pointerEvents = 'none';
+        }
+
         modal.classList.remove('opacity-0', 'pointer-events-none');
         modal.classList.add('opacity-100', 'pointer-events-auto');
         card.classList.remove('scale-95');
         card.classList.add('scale-100');
 
-        // Reset tooltip initial state
-        if (tooltip) {
-          tooltip.classList.add('opacity-0', 'translate-y-3');
-          tooltip.classList.remove('opacity-100', 'translate-y-0');
-        }
+        // Start 0 -> 1 bit chunk image revelation
+        startBitChunkReveal();
 
-        // 2. Delayed tooltip reveal (1.2s after photo appears)
-        tooltipTimeout = window.setTimeout(() => {
-          if (!isOpen) return;
-          if (tooltip) {
-            tooltip.classList.remove('opacity-0', 'translate-y-3');
-            tooltip.classList.add('opacity-100', 'translate-y-0');
-          }
-        }, 1200);
-
-        // 3. Auto-dismiss timer (6 seconds total)
-        let secondsLeft = 6;
+        // 30 seconds countdown (Strictly in amber)
+        let secondsLeft = 30;
         if (timerText) {
-          timerText.textContent = `AUTO-CIERRE EN ${secondsLeft}s...`;
+          timerText.textContent = `AUTO-CIERRE: ${secondsLeft}s`;
         }
 
+        if (countdownInterval) clearInterval(countdownInterval);
         countdownInterval = window.setInterval(() => {
           secondsLeft--;
           if (secondsLeft > 0 && timerText) {
-            timerText.textContent = `AUTO-CIERRE EN ${secondsLeft}s...`;
+            timerText.textContent = `AUTO-CIERRE: ${secondsLeft}s`;
           }
         }, 1000);
 
+        if (dismissTimeout) clearTimeout(dismissTimeout);
         dismissTimeout = window.setTimeout(() => {
           closeEasterEgg();
-        }, 6000);
+        }, 30000);
       }
 
       const onBackdropClick = (e: MouseEvent) => {
@@ -350,7 +638,7 @@ const techStack = [
           closeEasterEgg();
         }
       };
-      if (modal) modal.addEventListener('click', onBackdropClick);
+      modal.addEventListener('click', onBackdropClick);
 
       const onCloseBtnClick = (e: MouseEvent) => {
         e.stopPropagation();
@@ -377,13 +665,43 @@ const techStack = [
         laptopSlot.addEventListener('click', onSlotClick);
       }
 
+      const onOpenBtnClick = (e: MouseEvent) => {
+        e.stopPropagation();
+        openEasterEgg();
+      };
+      if (openBtn) {
+        openBtn.addEventListener('click', onOpenBtnClick);
+      }
+
+      const onCardClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== 'A' && target.tagName !== 'BUTTON' && !target.closest('button')) {
+          openEasterEgg();
+        }
+      };
+      if (laptopCard) {
+        laptopCard.addEventListener('click', onCardClick);
+      }
+
       cleanupEasterEgg = () => {
-        if (modal) modal.removeEventListener('click', onBackdropClick);
+        closeEasterEgg();
+        if (modal && modal.parentElement === document.body) {
+          modal.remove();
+        }
+        const rust3d = document.getElementById('rust-3d-root');
+        if (rust3d) {
+          rust3d.style.visibility = 'visible';
+          rust3d.style.opacity = '1';
+          rust3d.style.pointerEvents = 'none';
+        }
+        modal.removeEventListener('click', onBackdropClick);
         if (closeBtn) closeBtn.removeEventListener('click', onCloseBtnClick);
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('laptop-easter-egg', onCustomTrigger);
         if (laptopSlot) laptopSlot.removeEventListener('click', onSlotClick);
-        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+        if (openBtn) openBtn.removeEventListener('click', onOpenBtnClick);
+        if (laptopCard) laptopCard.removeEventListener('click', onCardClick);
+        if (animId) cancelAnimationFrame(animId);
         if (dismissTimeout) clearTimeout(dismissTimeout);
         if (countdownInterval) clearInterval(countdownInterval);
       };
@@ -394,4 +712,21 @@ const techStack = [
       if (cleanupEasterEgg) cleanupEasterEgg();
     });
   </script>
+
+  <style is:global>
+    #easter-egg-modal,
+    #easter-egg-card,
+    #creator-photo-box {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+      overflow: hidden !important;
+    }
+    #easter-egg-modal::-webkit-scrollbar,
+    #easter-egg-card::-webkit-scrollbar,
+    #creator-photo-box::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+  </style>
 </Layout>

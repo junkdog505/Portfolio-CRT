@@ -6,8 +6,8 @@
 
 <div
   id="crt-splash-screen"
-  class="fixed inset-0 z-[99999] bg-[#000000] flex items-center justify-center overflow-hidden select-none pointer-events-auto"
-  style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; width: 100dvw !important; height: 100vh !important; height: 100dvh !important; background-color: #000000 !important; z-index: 9999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; view-transition-name: none !important;"
+  class="fixed inset-0 z-[9999999] bg-[#000000] flex items-center justify-center overflow-hidden select-none pointer-events-auto"
+  style="display: none; opacity: 0; visibility: hidden; view-transition-name: none !important;"
   aria-hidden="true"
   role="presentation"
 >
@@ -42,18 +42,32 @@
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
   function runResidentEvilDoorSplash() {
-    // Check if already opened in this session
-    if (sessionStorage.getItem('portfolio_door_opened') === 'true' || sessionStorage.getItem('portfolio_crt_booted') === 'true') {
-      const splash = document.getElementById('crt-splash-screen');
-      if (splash) splash.remove();
-      return;
-    }
+    // Check if already completed in this browser
+    try {
+      const hasSeen = localStorage.getItem('portfolio_splash_seen') === 'true' ||
+                      sessionStorage.getItem('portfolio_splash_seen') === 'true' ||
+                      sessionStorage.getItem('portfolio_door_opened') === 'true' ||
+                      sessionStorage.getItem('portfolio_crt_booted') === 'true';
+      if (hasSeen || !document.documentElement.classList.contains('needs-splash')) {
+        const splash = document.getElementById('crt-splash-screen');
+        if (splash) splash.remove();
+        return;
+      }
+    } catch (e) {}
 
     const splash = document.getElementById('crt-splash-screen');
     const canvas = document.getElementById('re-door-canvas') as HTMLCanvasElement | null;
     const fadeCurtain = document.getElementById('re-fade-curtain');
 
     if (!splash || !canvas) return;
+
+    // First visit: unhide splash element
+    splash.style.removeProperty('display');
+    splash.style.removeProperty('opacity');
+    splash.style.removeProperty('visibility');
+    splash.style.setProperty('display', 'flex', 'important');
+    splash.style.setProperty('opacity', '1', 'important');
+    splash.style.setProperty('visibility', 'visible', 'important');
 
     let isDone = false;
     let animId: number | null = null;
@@ -326,16 +340,23 @@
       isDone = true;
       if (animId) cancelAnimationFrame(animId);
 
-      // Save session storage flags so it never re-runs in this session
-      sessionStorage.setItem('portfolio_door_opened', 'true');
-      sessionStorage.setItem('portfolio_crt_booted', 'true');
+      // Permanently save state in browser storage so it NEVER re-runs on F5 or reload
+      try {
+        localStorage.setItem('portfolio_splash_seen', 'true');
+        sessionStorage.setItem('portfolio_splash_seen', 'true');
+        sessionStorage.setItem('portfolio_door_opened', 'true');
+        sessionStorage.setItem('portfolio_crt_booted', 'true');
+      } catch (e) {}
+
+      document.documentElement.classList.remove('needs-splash');
       document.documentElement.classList.add('crt-booted');
 
-      // Apply saved theme (defaults to light mode) now that splash is done
-      const theme = localStorage.getItem('portfolio-theme') || 'light';
-      if (theme !== 'dark') {
-        document.documentElement.classList.add('light-theme');
-      }
+      // Enforce pure dark mode
+      document.documentElement.classList.remove('light-theme');
+
+      // Notify 3D canvas and DOM observers that app-content-root is now visible
+      window.dispatchEvent(new CustomEvent('portfolio-booted'));
+      window.dispatchEvent(new Event('resize'));
 
       // Ensure critical curtain is cleanly removed
       const criticalCurtain = document.getElementById('critical-boot-curtain');
@@ -350,14 +371,6 @@
         }, 620);
       }
     }
-
-    // Developer / testing hard refresh interceptor (Ctrl+F5 or Ctrl+R) to allow replay
-    window.addEventListener('keydown', (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'F5' || e.key === 'r' || e.key === 'R')) {
-        sessionStorage.removeItem('portfolio_door_opened');
-        sessionStorage.removeItem('portfolio_crt_booted');
-      }
-    });
 
     // Window Resize Handler (Recalculates optimal distance so door is never cropped)
     const onResize = () => {
@@ -376,9 +389,15 @@
   runResidentEvilDoorSplash();
 
   document.addEventListener('astro:page-load', () => {
-    if (sessionStorage.getItem('portfolio_door_opened') === 'true' || sessionStorage.getItem('portfolio_crt_booted') === 'true') {
-      const splash = document.getElementById('crt-splash-screen');
-      if (splash) splash.remove();
-    }
+    try {
+      const hasSeen = localStorage.getItem('portfolio_splash_seen') === 'true' ||
+                      sessionStorage.getItem('portfolio_splash_seen') === 'true' ||
+                      sessionStorage.getItem('portfolio_door_opened') === 'true' ||
+                      sessionStorage.getItem('portfolio_crt_booted') === 'true';
+      if (hasSeen || !document.documentElement.classList.contains('needs-splash')) {
+        const splash = document.getElementById('crt-splash-screen');
+        if (splash) splash.remove();
+      }
+    } catch (e) {}
   });
 </script>
