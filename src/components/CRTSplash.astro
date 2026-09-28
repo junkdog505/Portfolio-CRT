@@ -331,6 +331,12 @@
       sessionStorage.setItem('portfolio_crt_booted', 'true');
       document.documentElement.classList.add('crt-booted');
 
+      // Apply saved theme (defaults to light mode) now that splash is done
+      const theme = localStorage.getItem('portfolio-theme') || 'light';
+      if (theme !== 'dark') {
+        document.documentElement.classList.add('light-theme');
+      }
+
       // Ensure critical curtain is cleanly removed
       const criticalCurtain = document.getElementById('critical-boot-curtain');
       if (criticalCurtain) criticalCurtain.remove();

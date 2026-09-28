@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import CRTWarp from '../components/CRTWarp.astro';
 
 const techStack = [
   { name: 'Three.js / WebGL', type: '3D Real-time', color: 'text-amber-500 border-amber-600/40' },
@@ -283,7 +282,7 @@ const techStack = [
       let countdownInterval: number | null = null;
 
       function closeEasterEgg() {
-        if (!isOpen) return;
+        if (!isOpen || !modal || !card) return;
         isOpen = false;
 
         if (tooltipTimeout) clearTimeout(tooltipTimeout);
@@ -302,7 +301,7 @@ const techStack = [
       }
 
       function openEasterEgg() {
-        if (isOpen) return;
+        if (isOpen || !modal || !card) return;
         isOpen = true;
 
         playEasterEggChime();
@@ -351,7 +350,7 @@ const techStack = [
           closeEasterEgg();
         }
       };
-      modal.addEventListener('click', onBackdropClick);
+      if (modal) modal.addEventListener('click', onBackdropClick);
 
       const onCloseBtnClick = (e: MouseEvent) => {
         e.stopPropagation();
@@ -379,7 +378,7 @@ const techStack = [
       }
 
       cleanupEasterEgg = () => {
-        modal.removeEventListener('click', onBackdropClick);
+        if (modal) modal.removeEventListener('click', onBackdropClick);
         if (closeBtn) closeBtn.removeEventListener('click', onCloseBtnClick);
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('laptop-easter-egg', onCustomTrigger);

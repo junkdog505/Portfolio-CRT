@@ -21,7 +21,7 @@ const {
 ---
 
 <!doctype html>
-<html lang="es" class="light-theme">
+<html lang="es" class="bg-black text-zinc-300">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,31 +33,44 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
 
-    <!-- CRT Boot Initializer: Prevents splash screen flash on subsequent visits in the same session -->
+    <!-- CRT Boot & Theme Initializer: Runs synchronously in <head> before any DOM is rendered -->
     <script is:inline>
-      const checkBoot = () => {
-        if (sessionStorage.getItem('portfolio_crt_booted') === 'true' || sessionStorage.getItem('portfolio_door_opened') === 'true') {
+      const initBootAndTheme = () => {
+        const isBooted = sessionStorage.getItem('portfolio_crt_booted') === 'true' || sessionStorage.getItem('portfolio_door_opened') === 'true';
+        if (isBooted) {
           document.documentElement.classList.add('crt-booted');
+          const theme = localStorage.getItem('portfolio-theme') || 'light';
+          if (theme !== 'dark') {
+            document.documentElement.classList.add('light-theme');
+          } else {
+            document.documentElement.classList.remove('light-theme');
+          }
+        } else {
+          // Keep dark mode during initial splash screen (prevents white/light flash in production)
+          document.documentElement.classList.remove('light-theme', 'crt-booted');
         }
       };
-      checkBoot();
-      document.addEventListener('astro:after-swap', checkBoot);
+      initBootAndTheme();
+      document.addEventListener('astro:after-swap', initBootAndTheme);
     </script>
 
     <!-- Critical Zero-Flash Preboot Inline Styles (Guarantees zero content flash before splash) -->
     <style is:inline id="critical-boot-curtain-style">
-      html:not(.crt-booted) {
-        background-color: #000000 !important;
+      /* Initial state before splash screen boots: entire page content is hidden */
+      #app-content-root {
+        display: none !important;
       }
-      html:not(.crt-booted) body {
-        background-color: #000000 !important;
-        overflow: hidden !important;
+      /* When booted, reveal application content */
+      html.crt-booted #app-content-root {
+        display: flex !important;
       }
-      html:not(.crt-booted) #app-content-root {
-        opacity: 0 !important;
-        visibility: hidden !important;
+      /* Hide splash screen and curtain immediately if booted */
+      html.crt-booted #crt-splash-screen,
+      html.crt-booted #critical-boot-curtain {
+        display: none !important;
         pointer-events: none !important;
       }
+      /* Fallback black shield at 0ms */
       #critical-boot-curtain {
         position: fixed !important;
         top: 0 !important;
@@ -69,27 +82,8 @@ const {
         background-color: #000000 !important;
         z-index: 2147483647 !important;
         pointer-events: none !important;
-        display: block !important;
-      }
-      html.crt-booted #critical-boot-curtain {
-        display: none !important;
-        pointer-events: none !important;
       }
     </style>
-
-    <!-- Theme Initializer: Default is LIGHT mode -->
-    <script is:inline>
-      const applyTheme = () => {
-        const theme = localStorage.getItem('portfolio-theme') || 'light';
-        if (theme === 'dark') {
-          document.documentElement.classList.remove('light-theme');
-        } else {
-          document.documentElement.classList.add('light-theme');
-        }
-      };
-      applyTheme();
-      document.addEventListener('astro:after-swap', applyTheme);
-    </script>
 
     <!-- Astro View Transitions -->
     <ClientRouter />
@@ -104,7 +98,7 @@ const {
     <CRTSplash />
 
     <!-- Application Content Root (Hidden until splash sequence finishes) -->
-    <div id="app-content-root" class="contents">
+    <div id="app-content-root" class={`relative flex flex-col flex-1 w-full ${isHome ? 'h-full overflow-hidden' : 'min-h-screen overflow-x-hidden'}`}>
 
     <!-- Persistent Full-Width CRT Warp Plasma Background across all pages -->
     <div
